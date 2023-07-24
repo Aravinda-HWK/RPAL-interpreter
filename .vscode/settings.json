@@ -1,5 +1,13 @@
 {
+<<<<<<< HEAD
   "java.project.sourcePaths": ["src"],
   "java.project.outputPath": "bin",
   "java.project.referencedLibraries": ["lib/**/*.jar"]
+=======
+    "java.project.sourcePaths": ["src"],
+    "java.project.outputPath": "bin",
+    "java.project.referencedLibraries": [
+        "lib/**/*.jar"
+    ]
+>>>>>>> 0deceb6bc29690ea48a694a24769dbcf0375a17b
 }
