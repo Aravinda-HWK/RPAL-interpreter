@@ -22,9 +22,8 @@ public class AST{
     this.root = node;
   }
 
-  /**
-   * Prints the tree nodes in pre-order fashion.
-   */
+  // Prints the tree nodes in pre-order fashion.
+   
   public void print(){
     preOrderPrint(root,"");
   }
@@ -49,9 +48,8 @@ public class AST{
       System.out.println(printPrefix+node.getType().getPrintName());
   }
 
-  /**
-   * Standardize this tree
-   */
+  // Standardize this tree
+
   public void standardize(){
     standardize(root);
     standardized = true;
