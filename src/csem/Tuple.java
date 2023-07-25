@@ -13,6 +13,10 @@ public class Tuple extends ASTNode{
     setType(ASTNodeType.TUPLE);
   }
   
+
+// The getValue() function beautifully handles string representation of a linked list of ASTNodes. 
+// It elegantly returns the values of child nodes, gracefully handling cases with or without child nodes.
+
   @Override
   public String getValue(){
     ASTNode childNode = getChild();
@@ -28,6 +32,9 @@ public class Tuple extends ASTNode{
     return printValue;
   }
   
+  // The function accepts a NodeCopier object and returns a Tuple object.
+  // The parameter "nodeCopier" is an object of type "NodeCopier".
+  // The method is returning a Tuple.
   public Tuple accept(NodeCopier nodeCopier){
     return nodeCopier.copy(this);
   }

@@ -35,6 +35,7 @@ public class Delta extends ASTNode{
     return boundVars;
   }
   
+  // These are getter and setter methods for the `boundVars`, `body`, `index`, and `linkedEnv` fields of the `Delta` class.
   public void addBoundVars(String boundVar){
     boundVars.add(boundVar);
   }

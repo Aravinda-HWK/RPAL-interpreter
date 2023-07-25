@@ -18,6 +18,9 @@ public class Eta extends ASTNode{
     return "[eta closure: "+delta.getBoundVars().get(0)+": "+delta.getIndex()+"]";
   }
   
+  // The function accepts a NodeCopier object and returns a copy of the current object.
+  // The parameter "nodeCopier" is an object of type "NodeCopier".
+  // The method is returning an object of type Eta.
   public Eta accept(NodeCopier nodeCopier){
     return nodeCopier.copy(this);
   }
