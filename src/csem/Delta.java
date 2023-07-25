@@ -7,10 +7,9 @@ import java.util.Stack;
 import ast.ASTNode;
 import ast.ASTNodeType;
 
-/**
- * Represents a lambda closure.
- * @author Group 9
- */
+
+//The Delta class represents a delta node in an abstract syntax tree, which is used for partial
+//application in program evaluation.
 public class Delta extends ASTNode{
   private List<String> boundVars;
   private Environment linkedEnv; //environment in effect when this Delta was pushed on to the value stack
