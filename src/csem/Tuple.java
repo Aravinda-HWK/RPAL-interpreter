@@ -3,6 +3,10 @@ package csem;
 import ast.ASTNode;
 import ast.ASTNodeType;
 
+
+//The Tuple class represents a tuple in an abstract syntax tree (AST) and provides methods for
+//printing its value and accepting a NodeCopier.
+
 public class Tuple extends ASTNode{
   
   public Tuple(){

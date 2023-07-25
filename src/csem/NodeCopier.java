@@ -6,15 +6,7 @@ import java.util.Stack;
 
 import ast.ASTNode;
 
-/**
- * Class to make copies of nodes on value stack. Used to pass back copies of
- * environment bindings so that later uses of those bindings are not affected
- * by any changes made in any earlier deltas.
- * 
- * <p>Uses the Visitor pattern to avoid instanceOf code smell.
- * 
- * @author Group 9
- */
+//The NodeCopier class provides a method to create a deep copy of an ASTNode object.
 public class NodeCopier{
   
   public ASTNode copy(ASTNode astNode){
@@ -29,6 +21,10 @@ public class NodeCopier{
     return copy;
   }
   
+
+  //he function `copy` creates a deep copy of a `Beta` object, including its child, sibling, type,
+  //value, source line number, then body, and else body.
+
   public Beta copy(Beta beta){
     Beta copy = new Beta();
     if(beta.getChild()!=null)
@@ -54,6 +50,10 @@ public class NodeCopier{
     return copy;
   }
   
+
+  //The function "copy" creates a deep copy of an object of type Eta, including its child, sibling,
+  //type, value, source line number, and delta.
+
   public Eta copy(Eta eta){
     Eta copy = new Eta();
     if(eta.getChild()!=null)
@@ -69,6 +69,10 @@ public class NodeCopier{
     return copy;
   }
   
+
+  //The function `copy` creates a deep copy of a `Delta` object, including its child, sibling, type,
+  //value, index, source line number, body, bound variables, and linked environment.
+
   public Delta copy(Delta delta){
     Delta copy = new Delta();
     if(delta.getChild()!=null)
@@ -95,6 +99,7 @@ public class NodeCopier{
     return copy;
   }
   
+  //The function "copy" creates a deep copy of a Tuple object, including its child and sibling references.
   public Tuple copy(Tuple tuple){
     Tuple copy = new Tuple();
     if(tuple.getChild()!=null)

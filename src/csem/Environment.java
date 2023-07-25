@@ -41,6 +41,10 @@ public class Environment{
       return null;
   }
   
+  // The addMapping function adds a key-value pair to a map.
+  // The key parameter is a String that represents the key for the mapping. 
+  // The value parameter is of type ASTNode, which represents an abstract syntax tree node.
+
   public void addMapping(String key, ASTNode value){
     nameValueMap.put(key, value);
   }
