@@ -1,18 +1,39 @@
-## Getting Started
+RPAL Language Parser and CSE Machine
 
-Welcome to the VS Code Java world. Here is a guideline to help you get started to write Java code in Visual Studio Code.
+Overview:
+This project is an implementation of a lexical analyzer, parser, Abstract Syntax Tree (AST), Standardized Tree (ST), and CSE machine for the RPAL language. The RPAL language is a programming language designed for teaching purposes. The project aims to read an RPAL program from an input file, parse it, build the AST, convert it to ST, and finally evaluate it using the CSE machine.
 
-## Folder Structure
+Features:
 
-The workspace contains two folders by default, where:
+- Lexical Analyzer: Tokenizes the input RPAL program based on the provided lexical rules.
+- Parser: Generates an Abstract Syntax Tree (AST) by applying the grammar rules specified for RPAL.
+- Standardization: Converts the AST into a Standardized Tree (ST) by applying standardization rules.
+- CSE Machine: Evaluates the Standardized Tree and produces the final output.
 
-- `src`: the folder to maintain sources
-- `lib`: the folder to maintain dependencies
+Usage:
+To run the program, use the following commands:
 
-Meanwhile, the compiled output files will be generated in the `bin` folder by default.
+For Java:
+$ java rpal20 file_name
 
-> If you want to customize the folder structure, open `.vscode/settings.json` and update the related settings there.
+Replace `file_name` with the name of the file that contains the RPAL program as the input.
 
-## Dependency Management
+Input Format:
+The input file should contain the RPAL program to be evaluated. The program should follow the syntax and lexical rules specified in RPAL_Lex.pdf and RPAL_Grammar.pdf, respectively.
 
-The `JAVA PROJECTS` view allows you to manage your dependencies. More details can be found [here](https://github.com/microsoft/vscode-java-dependency#manage-dependencies).
+Example Input:
+let rec Rev S =
+S eq '' -> '' | (Rev(Stern S)) @Conc(Stem S)
+within
+Pairs (S1, S2) =
+not (Isstring S1 & Isstring S2)
+-> 'both args not strings' | P (Rev S1, Rev S2)
+where rec P (S1, S2) =
+S1 eq '' & S2 eq '' -> nil | (Stern S1 eq '' & Stern S2 ne '') or
+(Stern S1 ne '' & Stern S2 eq '')
+-> 'unequal length strings'
+| (P (Stern S1, Stern S2) aug ((Stem S1) @Conc(Stem S2)))
+in Print(Pairs('abe','def'))
+
+Output Format:
+The output of the program will be the result of evaluating the RPAL program using the CSE machine.
