@@ -54,9 +54,14 @@ public class AST{
       System.out.println(printPrefix+node.getType().getPrintName());
   }
 
+<<<<<<< HEAD
   /**
    * Standardize this tree
    */
+=======
+  // Standardize this tree
+
+>>>>>>> 0deceb6bc29690ea48a694a24769dbcf0375a17b
   public void standardize(){
     standardize(root);
     standardized = true;

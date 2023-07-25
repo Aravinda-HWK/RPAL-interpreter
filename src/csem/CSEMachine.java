@@ -10,10 +10,6 @@ public class CSEMachine{
   private Stack<ASTNode> valueStack;
   private Delta rootDelta;
 
-  // Check AST standardization, throw exception if not.
-  // Create rootDelta from AST using createDeltas().
-  // Set linked environment for rootDelta.
-  // Initialize valueStack for ASTNode tracking.
   public CSEMachine(AST ast){
     if(!ast.isStandardized())
       throw new RuntimeException("AST has NOT been standardized!"); //should never happen
@@ -72,7 +68,6 @@ public class CSEMachine{
   }
 
   // RULE 6
-  // Apply binary operation based on ASTNode type. Return boolean result.
   private boolean applyBinaryOperation(ASTNode rator){
     switch(rator.getType()){
       case PLUS:
@@ -102,11 +97,6 @@ public class CSEMachine{
     }
   }
 
-  /**
-   * Performs binary arithmetic operations on two integers and pushes the result onto a value stack.
-   * 
-   * @param type The type of binary arithmetic operation to perform.
-   */
   private void binaryArithmeticOp(ASTNodeType type){
     ASTNode rand1 = valueStack.pop();
     ASTNode rand2 = valueStack.pop();
@@ -162,11 +152,6 @@ public class CSEMachine{
     valueStack.push(result);
   }
 
-/**
- * Performs binary logical equality and inequality operations on two operands.
- * 
- * @param type The type of binary logical equality or inequality operation to perform.
- */
   private void binaryLogicalEqNeOp(ASTNodeType type){
     ASTNode rand1 = valueStack.pop();
     ASTNode rand2 = valueStack.pop();
@@ -229,11 +214,6 @@ public class CSEMachine{
         pushTrueNode();
   }
 
-/**
- * Performs logical OR and AND operations on two operands.
- * 
- * @param type The type of logical OR or AND operation to perform.
- */
   private void binaryLogicalOrAndOp(ASTNodeType type){
     ASTNode rand1 = valueStack.pop();
     ASTNode rand2 = valueStack.pop();
@@ -262,9 +242,6 @@ public class CSEMachine{
     }
   }
 
-/**
- * The function `augTuples()` augments a tuple by adding another node as its sibling.
- */
   private void augTuples(){
     ASTNode rand1 = valueStack.pop();
     ASTNode rand2 = valueStack.pop();
@@ -286,12 +263,6 @@ public class CSEMachine{
   }
 
   // RULE 7
-  /**
-   * Applies a unary operation to an ASTNode.
-   * 
-   * @param rator The ASTNode object representing the operator of a unary operation.
-   * @return A boolean value indicating whether the operation was successfully applied.
-   */
   private boolean applyUnaryOperation(ASTNode rator){
     switch(rator.getType()){
       case NOT:
@@ -328,8 +299,6 @@ public class CSEMachine{
   }
 
   //RULE 3
-  //This method is responsible for evaluating the application of a function to its arguments. It takes in the currentDelta, node,
-  // currentEnv, and currentControlStack as parameters.
   private void applyGamma(Delta currentDelta, ASTNode node, Environment currentEnv, Stack<ASTNode> currentControlStack){
     ASTNode rator = valueStack.pop();
     ASTNode rand = valueStack.pop();
@@ -392,8 +361,6 @@ public class CSEMachine{
       EvaluationError.printError(rator.getSourceLineNumber(), "Don't know how to evaluate \""+rator.getValue()+"\"");
   }
 
-  //Evaluate reserved identifiers in AST and take specific actions based on the operator and operand.
-  //Use currentControlStack for control flow tracking. Return boolean result.
   private boolean evaluateReservedIdentifiers(ASTNode rator, ASTNode rand, Stack<ASTNode> currentControlStack){
     switch(rator.getValue()){
       case "Isinteger":
@@ -446,8 +413,6 @@ public class CSEMachine{
     }
   }
 
-  //Check ASTNode type and push a true or false node to the stack based on the comparison result 
-  //with the specified type. Parameters: "rand" (ASTNode), "type" (ASTNodeType).
   private void checkTypeAndPushTrueOrFalse(ASTNode rand, ASTNodeType type){
     if(rand.getType()==type)
       pushTrueNode();
@@ -542,8 +507,6 @@ public class CSEMachine{
   }
 
   // RULE 10
-  //Java function `tupleSelection` selects a specific element from a tuple (`rator`) 
-  //based on the given index represented by `rand` (ASTNode).
   private void tupleSelection(Tuple rator, ASTNode rand){
     if(rand.getType()!=ASTNodeType.INTEGER)
       EvaluationError.printError(rand.getSourceLineNumber(), "Non-integer tuple selection with \""+rand.getValue()+"\"");
@@ -581,7 +544,6 @@ public class CSEMachine{
   }
 
   //RULE 9
-  //The function creates a tuple node and populates it with child nodes from the value stack.
   private void createTuple(ASTNode node){
     int numChildren = getNumChildren(node);
     Tuple tupleNode = new Tuple();
@@ -609,8 +571,6 @@ public class CSEMachine{
   }
 
   // RULE 8
-  //The function handles the execution of a Beta node by evaluating a condition and adding the
-  //appropriate body to the control stack based on the condition result.
   private void handleBeta(Beta node, Stack<ASTNode> currentControlStack){
     ASTNode conditionResultNode = valueStack.pop();
 
