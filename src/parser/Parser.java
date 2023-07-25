@@ -10,14 +10,13 @@ import scanner.Token;
 import scanner.TokenType;
 
 /**
- * Recursive descent parser that complies with RPAL's phrase structure grammar.
- * <p>This class does all the heavy lifting:
- * <ul>
- * <li>It gets input from the scanner for every clause in the phase structure grammar.
- * <li>It builds the abstract syntax tree.
- * </ul>
- * @author Group 9
+ * Recursive descent parser implementing RPAL's phrase structure grammar.
+ *
+ * This class serves as the core component, handling the following tasks:
+ * - Obtaining input from the scanner for each clause in the phrase structure grammar.
+ * - Constructing the abstract syntax tree (AST) based on the input.
  */
+
 public class Parser{
   private Scanner s;
   private Token currentToken;
@@ -40,6 +39,10 @@ public class Parser{
       throw new ParseException("Expected EOF.");
   }
 
+
+  //The function reads tokens from a stream until it encounters a token of type DELETE, and then creates
+  //a terminal AST node based on the type of the current token.
+
   private void readNT(){
     do{
       currentToken = s.readNextToken(); //load next token
@@ -57,6 +60,11 @@ public class Parser{
     }
   }
   
+  //The function checks if the current token has a specific type and value.
+  //he type of the token that we want to check against the current token. It is of type TokenType.
+  //The value parameter is a String that represents the expected value of the current token.
+  //The method is returning a boolean value.
+
   private boolean isCurrentToken(TokenType type, String value){
     if(currentToken==null)
       return false;
@@ -95,8 +103,8 @@ public class Parser{
    * |
    * a -> b -> c
    * </pre>
-   * @param type type of node to build
-   * @param ariness number of children to create for the new node
+   * type of node to build
+   * number of children to create for the new node
    */
   private void buildNAryASTNode(ASTNodeType type, int ariness){
     ASTNode node = new ASTNode();
@@ -120,9 +128,7 @@ public class Parser{
     stack.push(node);
   }
   
-  /******************************
-   * Expressions
-   *******************************/
+  //Expressions----------------------------------------------
   
   /**
    * <pre>
@@ -181,10 +187,8 @@ public class Parser{
     }
   }
   
-  /******************************
-   * Tuple Expressions
-   *******************************/
-  
+  //Tuple Expressions----------------------------------------------
+
   /**
    * <pre>
    * T -> Ta ( ',' Ta )+ => 'tau'
@@ -239,10 +243,8 @@ public class Parser{
     }
   }
   
-  /******************************
-   * Boolean Expressions
-   *******************************/
-  
+  //Boolean Expressions----------------------------------------------
+
   /**
    * <pre>
    * B -> B 'or' Bt => 'or'
@@ -338,9 +340,9 @@ public class Parser{
   }
   
   
-  /******************************
-   * Arithmetic Expressions
-   *******************************/
+
+  // Arithmetic Expressions----------------------------------------------
+
   
   /**
    * <pre>
@@ -440,9 +442,7 @@ public class Parser{
     }
   }
   
-  /******************************
-   * Rators and Rands
-   *******************************/
+  //Rators and Rands----------------------------------------------
   
   /**
    * <pre>
@@ -450,6 +450,9 @@ public class Parser{
    *   -> Rn;
    * </pre>
    */
+
+  // The function `procR` processes a sequence of tokens and builds an n-ary AST node of type GAMMA.
+
   private void procR(){
     procRN(); //R -> Rn; NO extra readNT in procRN(). See while loop below for reason.
     readNT();
@@ -461,11 +464,7 @@ public class Parser{
         isCurrentToken(TokenType.RESERVED, "nil")||
         isCurrentToken(TokenType.RESERVED, "dummy")||
         isCurrentTokenType(TokenType.LEFT_PARENTHESES)){ //R -> R Rn => 'gamma'
-      procRN(); //NO extra readNT in procRN(). This is important because if we do an extra readNT in procRN and currentToken happens to
-                //be an INTEGER, IDENTIFIER, or STRING, it will get pushed on the stack. Then, the GAMMA node that we build will have the
-                //wrong kids. There are workarounds, e.g. keeping the extra readNT in procRN() and checking here if the last token read
-                //(which was read in procRN()) is an INTEGER, IDENTIFIER, or STRING and, if so, to pop it, call buildNAryASTNode, and then
-                //push it again. I chose this option because it seems cleaner.
+      procRN(); //extra readNT in procRN()
       buildNAryASTNode(ASTNodeType.GAMMA, 2);
       readNT();
     }
@@ -509,9 +508,8 @@ public class Parser{
     }
   }
 
-  /******************************
-   * Definitions
-   *******************************/
+  // Definitions----------------------------------------------
+
   
   /**
    * <pre>
@@ -581,11 +579,7 @@ public class Parser{
       readNT();
       if(isCurrentToken(TokenType.OPERATOR, ",")){ //Db -> Vl '=' E => '='
         readNT();
-        procVL(); //extra readNT in procVB()
-        //VL makes its COMMA nodes for all the tokens EXCEPT the ones
-        //we just read above (i.e., the first identifier and the comma after it)
-        //Hence, we must pop the top of the tree VL just made and put it under a
-        //comma node with the identifier it missed.
+        procVL(); //extra readNT in procVL()
         if(!isCurrentToken(TokenType.OPERATOR, "="))
           throw new ParseException("DB: = expected.");
         buildNAryASTNode(ASTNodeType.COMMA, 2);
@@ -622,9 +616,7 @@ public class Parser{
     }
   }
   
-  /******************************
-   * Variables
-   *******************************/
+  //Variables----------------------------------------------
   
   /**
    * <pre>
