@@ -1,5 +1,7 @@
 package scanner;
 
+// These import statements are importing classes and interfaces from the `java.io` and `java.util`
+// packages.
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -8,88 +10,68 @@ import java.io.InputStreamReader;
 import java.util.Arrays;
 import java.util.List;
 
-/**
- * Scanner: Combines a lexer and a screener. Complies with RPAL's Lexicon.
- * @author Group 9
- */
 public class Scanner{
   private BufferedReader buffer;
   private String extraCharRead;
-  private final List<String> reservedIdentifiers = Arrays.asList(new String[]{"let","in","within","fn","where","aug","or",
-                                                                              "not","gr","ge","ls","le","eq","ne","true",
-                                                                              "false","nil","dummy","rec","and"});
+  private final List<String> reservedIdentifiers = Arrays.asList("let", "in", "within", "fn", "where", "aug", "or",
+          "not", "gr", "ge", "ls", "le", "eq", "ne", "true", "false", "nil", "dummy", "rec", "and");
   private int sourceLineNumber;
-  
-  public Scanner(String inputFile) throws IOException{
-    sourceLineNumber = 1;
-    buffer = new BufferedReader(new InputStreamReader(new FileInputStream(new File(inputFile))));
-  }
-  
-  /**
-   * Returns next token from input file
-   * @return null if the file has ended
-   */
-  public Token readNextToken(){
-    Token nextToken = null;
-    String nextChar;
-    if(extraCharRead!=null){
-      nextChar = extraCharRead;
-      extraCharRead = null;
-    } else
-      nextChar = readNextChar();
-    if(nextChar!=null)
-      nextToken = buildToken(nextChar);
-    return nextToken;
+
+  public Scanner(String inputFile) throws IOException {
+      sourceLineNumber = 1;
+      File file=new File(inputFile);
+      FileInputStream fileInputStream=new FileInputStream(file);
+      InputStreamReader inputStreamReader=new InputStreamReader(fileInputStream);
+      buffer = new BufferedReader(inputStreamReader);
   }
 
-  private String readNextChar(){
-    String nextChar = null;
-    try{
-      int c = buffer.read();
-      if(c!=-1){
-        nextChar = Character.toString((char)c);
-        if(nextChar.equals("\n")) sourceLineNumber++;
-      } else
-          buffer.close();
-    }catch(IOException e){
+  public Token readNextToken() {
+    if (extraCharRead != null) {
+        String nextChar = extraCharRead;
+        extraCharRead = null;
+        return buildToken(nextChar);
+    } else {
+        return buildToken(readNextChar());
     }
-    return nextChar;
   }
 
-  /**
-   * Builds next token from input
-   * @param currentChar character currently being processed 
-   * @return token that was built
-   */
-  private Token buildToken(String currentChar){
-    Token nextToken = null;
-    if(LexicalRegexPatterns.LetterPattern.matcher(currentChar).matches()){
-      nextToken = buildIdentifierToken(currentChar);
+ private String readNextChar() {
+        String nextChar = null;
+        try {
+            int c = buffer.read();
+            if (c != -1) {
+                nextChar = Character.toString((char) c);
+                if (nextChar.equals("\n")) {
+                    sourceLineNumber++;
+                }
+            } else {
+                buffer.close();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return nextChar;
     }
-    else if(LexicalRegexPatterns.DigitPattern.matcher(currentChar).matches()){
-      nextToken = buildIntegerToken(currentChar);
-    }
-    else if(LexicalRegexPatterns.OpSymbolPattern.matcher(currentChar).matches()){ //comment tokens are also entered from here
-      nextToken = buildOperatorToken(currentChar);
-    }
-    else if(currentChar.equals("\'")){
-      nextToken = buildStringToken(currentChar);
-    }
-    else if(LexicalRegexPatterns.SpacePattern.matcher(currentChar).matches()){
-      nextToken = buildSpaceToken(currentChar);
-    }
-    else if(LexicalRegexPatterns.PunctuationPattern.matcher(currentChar).matches()){
-      nextToken = buildPunctuationPattern(currentChar);
-    }
-    return nextToken;
-  }
 
-  /**
-   * Builds Identifier token.
-   * Identifier -> Letter (Letter | Digit | '_')*
-   * @param currentChar character currently being processed 
-   * @return token that was built
-   */
+
+    private Token buildToken(String currentChar) {
+      Token nextToken = null;
+      if (LexicalRegexPatterns.LetterPattern.matcher(currentChar).matches()) {
+          nextToken = buildIdentifierToken(currentChar);
+      } else if (LexicalRegexPatterns.DigitPattern.matcher(currentChar).matches()) {
+          nextToken = buildIntegerToken(currentChar);
+      } else if (LexicalRegexPatterns.OpSymbolPattern.matcher(currentChar).matches()) {
+          nextToken = buildOperatorToken(currentChar);
+      } else if (currentChar.equals("\'")) {
+          nextToken = buildStringToken(currentChar);
+      } else if (LexicalRegexPatterns.SpacePattern.matcher(currentChar).matches()) {
+          nextToken = buildSpaceToken(currentChar);
+      } else if (LexicalRegexPatterns.PunctuationPattern.matcher(currentChar).matches()) {
+          nextToken = buildPunctuationPattern(currentChar);
+      }
+      return nextToken;
+  }
+ 
   private Token buildIdentifierToken(String currentChar){
     Token identifierToken = new Token();
     identifierToken.setType(TokenType.IDENTIFIER);
@@ -116,12 +98,7 @@ public class Scanner{
     return identifierToken;
   }
 
-  /**
-   * Builds integer token.
-   * Integer -> Digit+
-   * @param currentChar character currently being processed 
-   * @return token that was built
-   */
+
   private Token buildIntegerToken(String currentChar){
     Token integerToken = new Token();
     integerToken.setType(TokenType.INTEGER);
@@ -144,12 +121,6 @@ public class Scanner{
     return integerToken;
   }
 
-  /**
-   * Builds operator token.
-   * Operator -> Operator_symbol+
-   * @param currentChar character currently being processed 
-   * @return token that was built
-   */
   private Token buildOperatorToken(String currentChar){
     Token opSymbolToken = new Token();
     opSymbolToken.setType(TokenType.OPERATOR);
@@ -175,13 +146,6 @@ public class Scanner{
     opSymbolToken.setValue(sBuilder.toString());
     return opSymbolToken;
   }
-
-  /**
-   * Builds string token.
-   * String -> '''' ('\' 't' | '\' 'n' | '\' '\' | '\' '''' |'(' | ')' | ';' | ',' |'' |Letter | Digit | Operator_symbol )* ''''
-   * @param currentChar character currently being processed 
-   * @return token that was built
-   */
   private Token buildStringToken(String currentChar){
     Token stringToken = new Token();
     stringToken.setType(TokenType.STRING);
@@ -189,13 +153,12 @@ public class Scanner{
     StringBuilder sBuilder = new StringBuilder("");
     
     String nextChar = readNextChar();
-    while(nextChar!=null){ //null indicates the file ended
-      if(nextChar.equals("\'")){ //we just used up the last char we read, hence no need to set extraCharRead
-        //sBuilder.append(nextChar);
+    while(nextChar!=null){ 
+      if(nextChar.equals("\'")){ 
         stringToken.setValue(sBuilder.toString());
         return stringToken;
       }
-      else if(LexicalRegexPatterns.StringPattern.matcher(nextChar).matches()){ //match Letter | Digit | Operator_symbol
+      else if(LexicalRegexPatterns.StringPattern.matcher(nextChar).matches()){
         sBuilder.append(nextChar);
         nextChar = readNextChar();
       }
@@ -211,7 +174,7 @@ public class Scanner{
     StringBuilder sBuilder = new StringBuilder(currentChar);
     
     String nextChar = readNextChar();
-    while(nextChar!=null){ //null indicates the file ended
+    while(nextChar!=null){ 
       if(LexicalRegexPatterns.SpacePattern.matcher(nextChar).matches()){
         sBuilder.append(nextChar);
         nextChar = readNextChar();
@@ -233,7 +196,7 @@ public class Scanner{
     StringBuilder sBuilder = new StringBuilder(currentChar);
     
     String nextChar = readNextChar();
-    while(nextChar!=null){ //null indicates the file ended
+    while(nextChar!=null){ 
       if(LexicalRegexPatterns.CommentPattern.matcher(nextChar).matches()){
         sBuilder.append(nextChar);
         nextChar = readNextChar();
