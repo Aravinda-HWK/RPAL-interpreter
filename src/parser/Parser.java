@@ -145,7 +145,7 @@ public class Parser{
       int treesToPop = 0;
       
       readNT();
-      while(isCurrentTokenType(TokenType.IDENTIFIER) || isCurrentTokenType(TokenType.L_PAREN)){
+      while(isCurrentTokenType(TokenType.IDENTIFIER) || isCurrentTokenType(TokenType.LEFT_PARENTHESES)){
         procVB(); //extra readNT in procVB()
         treesToPop++;
       }
@@ -460,7 +460,7 @@ public class Parser{
         isCurrentToken(TokenType.RESERVED, "false")||
         isCurrentToken(TokenType.RESERVED, "nil")||
         isCurrentToken(TokenType.RESERVED, "dummy")||
-        isCurrentTokenType(TokenType.L_PAREN)){ //R -> R Rn => 'gamma'
+        isCurrentTokenType(TokenType.LEFT_PARENTHESES)){ //R -> R Rn => 'gamma'
       procRN(); //NO extra readNT in procRN(). This is important because if we do an extra readNT in procRN and currentToken happens to
                 //be an INTEGER, IDENTIFIER, or STRING, it will get pushed on the stack. Then, the GAMMA node that we build will have the
                 //wrong kids. There are workarounds, e.g. keeping the extra readNT in procRN() and checking here if the last token read
@@ -498,10 +498,10 @@ public class Parser{
     else if(isCurrentToken(TokenType.RESERVED, "nil")){ //R -> 'nil' => 'nil'
       createTerminalASTNode(ASTNodeType.NIL, "nil");
     }
-    else if(isCurrentTokenType(TokenType.L_PAREN)){
+    else if(isCurrentTokenType(TokenType.LEFT_PARENTHESES)){
       readNT();
       procE(); //extra readNT in procE()
-      if(!isCurrentTokenType(TokenType.R_PAREN))
+      if(!isCurrentTokenType(TokenType.RIGHT_PARENTHESES))
         throw new ParseException("RN: ')' expected");
     }
     else if(isCurrentToken(TokenType.RESERVED, "dummy")){ //R -> 'dummy' => 'dummy'
@@ -570,10 +570,10 @@ public class Parser{
    * </pre>
    */
   private void procDB(){
-    if(isCurrentTokenType(TokenType.L_PAREN)){ //Db -> '(' D ')'
+    if(isCurrentTokenType(TokenType.LEFT_PARENTHESES)){ //Db -> '(' D ')'
       procD();
       readNT();
-      if(!isCurrentTokenType(TokenType.R_PAREN))
+      if(!isCurrentTokenType(TokenType.RIGHT_PARENTHESES))
         throw new ParseException("DB: ')' expected");
       readNT();
     }
@@ -602,7 +602,7 @@ public class Parser{
         else{ //Db -> '<IDENTIFIER>' Vb+ '=' E => 'fcn_form'
           int treesToPop = 0;
 
-          while(isCurrentTokenType(TokenType.IDENTIFIER) || isCurrentTokenType(TokenType.L_PAREN)){
+          while(isCurrentTokenType(TokenType.IDENTIFIER) || isCurrentTokenType(TokenType.LEFT_PARENTHESES)){
             procVB(); //extra readNT in procVB()
             treesToPop++;
           }
@@ -637,15 +637,15 @@ public class Parser{
     if(isCurrentTokenType(TokenType.IDENTIFIER)){ //Vb -> '<IDENTIFIER>'
       readNT();
     }
-    else if(isCurrentTokenType(TokenType.L_PAREN)){
+    else if(isCurrentTokenType(TokenType.LEFT_PARENTHESES)){
       readNT();
-      if(isCurrentTokenType(TokenType.R_PAREN)){ //Vb -> '(' ')' => '()'
+      if(isCurrentTokenType(TokenType.RIGHT_PARENTHESES)){ //Vb -> '(' ')' => '()'
         createTerminalASTNode(ASTNodeType.PAREN, "");
         readNT();
       }
       else{ //Vb -> '(' Vl ')'
         procVL(); //extra readNT in procVB()
-        if(!isCurrentTokenType(TokenType.R_PAREN))
+        if(!isCurrentTokenType(TokenType.RIGHT_PARENTHESES))
           throw new ParseException("VB: ')' expected");
         readNT();
       }

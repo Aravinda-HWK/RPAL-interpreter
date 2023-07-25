@@ -1,6 +1,7 @@
 package scanner;
 
 public class Token {
+    // The code snippet is defining the instance variables of the `Token` class.
     private TokenType type;          // The type of the token, which represents its category (e.g., identifier, operator symbol).
     private String value;            // The actual value of the token (e.g., the name of an identifier, the symbol of an operator).
     private int sourceLineNumber;    // The line number in the source code where the token was found.
@@ -13,11 +14,11 @@ public class Token {
     public TokenType getType() {
         return type;
     }
-
+    
     /**
-     * Set the type of the token.
-     *
-     * @param type The TokenType representing the type of the token.
+     * The function sets the type of a token.
+     * 
+     * @param type The "type" parameter is of type TokenType.
      */
     public void setType(TokenType type) {
         this.type = type;

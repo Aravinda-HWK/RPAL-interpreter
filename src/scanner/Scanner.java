@@ -251,9 +251,9 @@ public class Scanner{
     punctuationToken.setSourceLineNumber(sourceLineNumber);
     punctuationToken.setValue(currentChar);
     if(currentChar.equals("("))
-      punctuationToken.setType(TokenType.L_PAREN);
+      punctuationToken.setType(TokenType.LEFT_PARENTHESES);
     else if(currentChar.equals(")"))
-      punctuationToken.setType(TokenType.R_PAREN);
+      punctuationToken.setType(TokenType.RIGHT_PARENTHESES);
     else if(currentChar.equals(";"))
       punctuationToken.setType(TokenType.SEMICOLON);
     else if(currentChar.equals(","))
