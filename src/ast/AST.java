@@ -6,11 +6,8 @@ import java.util.Stack;
 import csem.Beta;
 import csem.Delta;
 
-/*
- * Abstract Syntax Tree: The nodes use a first-child
- * next-sibling representation.
- */
 public class AST{
+  // The above code is declaring private instance variables in a Java class.
   private ASTNode root;
   private ArrayDeque<PendingDeltaBody> pendingDeltaBodyQueue;
   private boolean standardized;
@@ -21,19 +18,18 @@ public class AST{
   public AST(ASTNode node){
     this.root = node;
   }
-
-<<<<<<< HEAD
-  /**
-   * Prints the tree nodes in pre-order fashion.
-   */
-=======
-  // Prints the tree nodes in pre-order fashion.
-   
->>>>>>> 0deceb6bc29690ea48a694a24769dbcf0375a17b
   public void print(){
     preOrderPrint(root,"");
   }
 
+  /**
+   * The function recursively prints the details of an ASTNode in pre-order traversal.
+   * 
+   * @param node The current node in the AST (Abstract Syntax Tree) that we want to print.
+   * @param printPrefix The printPrefix parameter is a string that represents the prefix to be added to
+   * the printed details of each ASTNode. It is used to create a hierarchical structure in the printed
+   * output, indicating the level of nesting of each node in the tree.
+   */
   private void preOrderPrint(ASTNode node, String printPrefix){
     if(node==null)
       return;
@@ -43,91 +39,78 @@ public class AST{
     preOrderPrint(node.getSibling(),printPrefix);
   }
 
+  /**
+   * The function prints the details of an ASTNode, including its type and value if it is an
+   * identifier, integer, or string.
+   * 
+   * @param node The `node` parameter is an object of type `ASTNode`, which represents a node in an
+   * abstract syntax tree (AST). The ASTNode class likely has properties such as `type` and `value`
+   * that store information about the node.
+   * @param printPrefix The `printPrefix` parameter is a string that is used as a prefix when printing
+   * the details of the ASTNode. It is added before the type and value of the node when printing.
+   */
   private void printASTNodeDetails(ASTNode node, String printPrefix){
-    if(node.getType() == ASTNodeType.IDENTIFIER ||
-        node.getType() == ASTNodeType.INTEGER){
+    if(node.getType() == ASTNodeType.IDENTIFIER || node.getType() == ASTNodeType.INTEGER || node.getType() == ASTNodeType.STRING){
       System.out.printf(printPrefix+node.getType().getPrintName()+"\n",node.getValue());
     }
-    else if(node.getType() == ASTNodeType.STRING)
-      System.out.printf(printPrefix+node.getType().getPrintName()+"\n",node.getValue());
     else
       System.out.println(printPrefix+node.getType().getPrintName());
   }
 
-<<<<<<< HEAD
-  /**
-   * Standardize this tree
-   */
-=======
-  // Standardize this tree
 
->>>>>>> 0deceb6bc29690ea48a694a24769dbcf0375a17b
+ /**
+  * The function "standardize" recursively standardizes a binary tree starting from the root node.
+  */
   public void standardize(){
     standardize(root);
     standardized = true;
   }
 
-  /**
-   * Standardize the tree bottom-up
-   * @param node node to standardize
-   */
+ 
   private void standardize(ASTNode node){
-    //standardize the children first
+    // The above code is checking if the current node has a child. If it does, it assigns the child
+    // node to a variable called childNode. Then, it enters a while loop that iterates as long as
+    // childNode is not null. Inside the loop, it calls a method called standardize on the childNode.
+    // After that, it updates the childNode variable to the sibling of the current childNode. This
+    // process continues until there are no more siblings of the current childNode.
     if(node.getChild()!=null){
-      ASTNode childNode = node.getChild();
-      while(childNode!=null){
+      for (ASTNode childNode = node.getChild(); childNode != null; childNode = childNode.getSibling()) {
         standardize(childNode);
-        childNode = childNode.getSibling();
-      }
+    }    
     }
-
-    //all children standardized. now standardize this node
+  
     switch(node.getType()){
+      // The above code is a case statement in a Java switch statement. It is handling the case where
+      // the node type is LET.
       case LET:
-        //       LET              GAMMA
-        //     /     \           /     \
-        //    EQUAL   P   ->   LAMBDA   E
-        //   /   \             /    \
-        //  X     E           X      P
-        ASTNode equalNode = node.getChild();
-        if(equalNode.getType()!=ASTNodeType.EQUAL)
-          throw new StandardizeException("LET/WHERE: left child is not EQUAL"); //safety
-        ASTNode e = equalNode.getChild().getSibling();
-        equalNode.getChild().setSibling(equalNode.getSibling());
-        equalNode.setSibling(e);
-        equalNode.setType(ASTNodeType.LAMBDA);
+        ASTNode getNode = node.getChild();
+        if(getNode.getType()!=ASTNodeType.EQUAL)
+          throw new StandardizeException("LET/WHERE: left child is not EQUAL"); 
+        ASTNode e = getNode.getChild().getSibling();
+        getNode.getChild().setSibling(getNode.getSibling());
+        getNode.setSibling(e);
+        getNode.setType(ASTNodeType.LAMBDA);
         node.setType(ASTNodeType.GAMMA);
         break;
-      case WHERE:
-        //make this is a LET node and standardize that
-        //       WHERE               LET
-        //       /   \             /     \
-        //      P    EQUAL   ->  EQUAL   P
-        //           /   \       /   \
-        //          X     E     X     E
-        equalNode = node.getChild().getSibling();
+      // The above code is a case statement in Java. It is handling the case "WHERE".
+      case WHERE:        
+        getNode = node.getChild().getSibling();
         node.getChild().setSibling(null);
-        equalNode.setSibling(node.getChild());
-        node.setChild(equalNode);
+        getNode.setSibling(node.getChild());
+        node.setChild(getNode);
         node.setType(ASTNodeType.LET);
         standardize(node);
         break;
-      case FCNFORM:
-        //       FCN_FORM                EQUAL
-        //       /   |   \              /    \
-        //      P    V+   E    ->      P     +LAMBDA
-        //                                    /     \
-        //                                    V     .E
+     // The above code is a case statement in a Java switch statement. It is handling the case where
+     // the node type is FCNFORM.
+      case FCNFORM:       
         ASTNode childSibling = node.getChild().getSibling();
         node.getChild().setSibling(constructLambdaChain(childSibling));
         node.setType(ASTNodeType.EQUAL);
         break;
+      // The above code is a case statement in Java. It is handling the case when the node type is
+      // "AT".
       case AT:
-        //         AT              GAMMA
-        //       / | \    ->       /    \
-        //      E1 N E2          GAMMA   E2
-        //                       /    \
-        //                      N     E1
         ASTNode e1 = node.getChild();
         ASTNode n = e1.getSibling();
         ASTNode e2 = n.getSibling();
@@ -140,14 +123,9 @@ public class AST{
         node.setChild(gammaNode);
         node.setType(ASTNodeType.GAMMA);
         break;
+      // The above code is handling a specific case called "WITHIN" in an abstract syntax tree (AST)
+      // for a programming language.
       case WITHIN:
-        //           WITHIN                  EQUAL
-        //          /      \                /     \
-        //        EQUAL   EQUAL    ->      X2     GAMMA
-        //       /    \   /    \                  /    \
-        //      X1    E1 X2    E2               LAMBDA  E1
-        //                                      /    \
-        //                                     X1    E2
         if(node.getChild().getType()!=ASTNodeType.EQUAL || node.getChild().getSibling().getType()!=ASTNodeType.EQUAL)
           throw new StandardizeException("WITHIN: one of the children is not EQUAL"); //safety
         ASTNode x1 = node.getChild().getChild();
@@ -166,12 +144,9 @@ public class AST{
         node.setChild(x2);
         node.setType(ASTNodeType.EQUAL);
         break;
-      case SIMULTDEF:
-        //         SIMULTDEF            EQUAL
-        //             |               /     \
-        //           EQUAL++  ->     COMMA   TAU
-        //           /   \             |      |
-        //          X     E           X++    E++
+    // The code is handling a case called "SIMULTDEF" in an abstract syntax tree (AST) for a
+    // programming language.
+      case SIMULTDEF:       
         ASTNode commaNode = new ASTNode();
         commaNode.setType(ASTNodeType.COMMA);
         ASTNode tauNode = new ASTNode();
@@ -185,14 +160,9 @@ public class AST{
         node.setChild(commaNode);
         node.setType(ASTNodeType.EQUAL);
         break;
+     // The code is handling a case where the node type is REC (recursive). It first checks if the
+     // child node is of type EQUAL, and if not, it throws a StandardizeException.
       case REC:
-        //        REC                 EQUAL
-        //         |                 /     \
-        //       EQUAL     ->       X     GAMMA
-        //      /     \                   /    \
-        //     X       E                YSTAR  LAMBDA
-        //                                     /     \
-        //                                    X       E
         childNode = node.getChild();
         if(childNode.getType()!=ASTNodeType.EQUAL)
           throw new StandardizeException("REC: child is not EQUAL"); //safety
@@ -214,42 +184,29 @@ public class AST{
         node.setChild(xWithSiblingGamma);
         node.setType(ASTNodeType.EQUAL);
         break;
+      // The above code is a case statement in a switch statement. It is checking if the case is
+      // LAMBDA. If it is, it assigns the sibling of the child node to the variable childSibling. Then,
+      // it sets the sibling of the child node to the result of the method constructLambdaChain,
+      // passing in the childSibling as an argument.
       case LAMBDA:
-        //     LAMBDA        LAMBDA
-        //      /   \   ->   /    \
-        //     V++   E      V     .E
         childSibling = node.getChild().getSibling();
         node.getChild().setSibling(constructLambdaChain(childSibling));
         break;
-      default:
-        // Node types we do NOT standardize:
-        // CSE Optimization Rule 6 (binops)
-        // OR
-        // AND
-        // PLUS
-        // MINUS
-        // MULT
-        // DIV
-        // EXP
-        // GR
-        // GE
-        // LS
-        // LE
-        // EQ
-        // NE
-        // CSE Optimization Rule 7 (unops)
-        // NOT
-        // NEG
-        // CSE Optimization Rule 8 (conditionals)
-        // CONDITIONAL
-        // CSE Optimization Rule 9, 10 (tuples)
-        // TAU
-        // CSE Optimization Rule 11 (n-ary functions)
-        // COMMA
+      default:       
         break;
     }
   }
 
+  /**
+   * The function populates a comma node and a tau node with the child nodes of an equal node.
+   * 
+   * @param equalNode The equalNode parameter is an ASTNode representing an EQUAL node in an abstract
+   * syntax tree.
+   * @param commaNode The `commaNode` parameter is an ASTNode representing a comma symbol in the
+   * abstract syntax tree.
+   * @param tauNode The tauNode parameter is an ASTNode object that represents the node where the "tau"
+   * value will be populated.
+   */
   private void populateCommaAndTauNode(ASTNode equalNode, ASTNode commaNode, ASTNode tauNode){
     if(equalNode.getType()!=ASTNodeType.EQUAL)
       throw new StandardizeException("SIMULTDEF: one of the children is not EQUAL"); //safety
@@ -260,10 +217,13 @@ public class AST{
   }
 
   /**
-   * Either creates a new child of the parent or attaches the child node passed in
-   * as the last sibling of the parent's existing children 
-   * @param parentNode
-   * @param childNode
+   * The function sets a child node for a given parent node, ensuring that the child node is added as a
+   * sibling to any existing child nodes.
+   * 
+   * @param parentNode The parent node is the node to which the child node will be added as a child or
+   * sibling. It is an instance of the ASTNode class.
+   * @param childNode The childNode parameter is an ASTNode object that represents the node that you
+   * want to set as a child of the parentNode.
    */
   private void setChild(ASTNode parentNode, ASTNode childNode){
     if(parentNode.getChild()==null)
@@ -277,6 +237,13 @@ public class AST{
     childNode.setSibling(null);
   }
 
+  /**
+   * The function constructs a chain of lambda nodes from a given ASTNode.
+   * 
+   * @param node The "node" parameter is an ASTNode object representing a node in an abstract syntax
+   * tree.
+   * @return The method is returning an ASTNode object.
+   */
   private ASTNode constructLambdaChain(ASTNode node){
     if(node.getSibling()==null)
       return node;
@@ -289,10 +256,12 @@ public class AST{
     return lambdaNode;
   }
 
-  /**
-   * Creates delta structures from the standardized tree
-   * @return the first delta structure (&delta;0)
-   */
+ 
+ /**
+  * The function creates and processes delta objects for a given root object.
+  * 
+  * @return The method is returning a Delta object.
+  */
   public Delta createDeltas(){
     pendingDeltaBodyQueue = new ArrayDeque<PendingDeltaBody>();
     deltaIndex = 0;
@@ -301,8 +270,15 @@ public class AST{
     return rootDelta;
   }
 
+  /**
+   * The function creates a new Delta object, sets its body and index, and assigns it as the
+   * currentDelta.
+   * 
+   * @param startBodyNode The startBodyNode parameter is an ASTNode object that represents the starting
+   * node of the body for which a Delta object is being created.
+   * @return The method is returning a Delta object.
+   */
   private Delta createDelta(ASTNode startBodyNode){
-    //we'll create this delta's body later
     PendingDeltaBody pendingDelta = new PendingDeltaBody();
     pendingDelta.startNode = startBodyNode;
     pendingDelta.body = new Stack<ASTNode>();
@@ -319,6 +295,10 @@ public class AST{
     return d;
   }
 
+  /**
+   * The function processes pending delta bodies by iterating through the queue and building delta
+   * bodies.
+   */
   private void processPendingDeltaStack(){
     while(!pendingDeltaBodyQueue.isEmpty()){
       PendingDeltaBody pendingDeltaBody = pendingDeltaBodyQueue.pop();
@@ -326,10 +306,12 @@ public class AST{
     }
   }
   
+  // The above code is a Java method called `buildDeltaBody` that takes an `ASTNode` object and a
+  // `Stack<ASTNode>` object as parameters.
   private void buildDeltaBody(ASTNode node, Stack<ASTNode> body){
-    if(node.getType()==ASTNodeType.LAMBDA){ //create a new delta
-      Delta d = createDelta(node.getChild().getSibling()); //the new delta's body starts at the right child of the lambda
-      if(node.getChild().getType()==ASTNodeType.COMMA){ //the left child of the lambda is the bound variable
+    if(node.getType()==ASTNodeType.LAMBDA){ 
+      Delta d = createDelta(node.getChild().getSibling());
+      if(node.getChild().getType()==ASTNodeType.COMMA){ 
         ASTNode commaNode = node.getChild();
         ASTNode childNode = commaNode.getChild();
         while(childNode!=null){
@@ -339,12 +321,10 @@ public class AST{
       }
       else
         d.addBoundVars(node.getChild().getValue());
-      body.push(d); //add this new delta to the existing delta's body
+      body.push(d); 
       return;
     }
     else if(node.getType()==ASTNodeType.CONDITIONAL){
-      //to enable programming order evaluation, traverse the children in reverse order so the condition leads
-      // cond -> then else becomes then else Beta cond
       ASTNode conditionNode = node.getChild();
       ASTNode thenNode = conditionNode.getSibling();
       ASTNode elseNode = thenNode.getSibling();
@@ -362,7 +342,12 @@ public class AST{
       return;
     }
     
-    //preOrder walk
+
+    // The above code is a recursive function called "buildDeltaBody" that takes in an ASTNode object
+    // and a List object called "body". It pushes the current node into the body list and then iterates
+    // through all the child nodes of the current node. For each child node, it recursively calls the
+    // buildDeltaBody function and passes in the child node and the body list. This process continues
+    // until there are no more child nodes.
     body.push(node);
     ASTNode childNode = node.getChild();
     while(childNode!=null){
@@ -371,6 +356,11 @@ public class AST{
     }
   }
 
+  /**
+   * The class "PendingDeltaBody" is a private class that contains a stack of ASTNodes and a startNode,
+   * and the class "isStandardized" is a public method that returns a boolean indicating whether the
+   * object is standardized.
+   */
   private class PendingDeltaBody{
     Stack<ASTNode> body;
     ASTNode startNode;

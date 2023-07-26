@@ -1,11 +1,10 @@
-let rec fibonacci b =
-b eq 0 -> 0 | b eq 1 -> 1 | fibonacci(b-2) + fibonacci(b-1)
+let rec length S =
+S eq '' -> 0 | 1 + length (Stern S)
 in
-let rec loop (n, a, b, T) =
-fibonacci(n) > b -> T | fibonacci(n) < a -> loop(n+1, a, b, T) | loop(n+1, a, b, T aug fibonacci(n))
-in
-let NumerRange (a, b) =
-loop(0, a, b, nil)
-in
-Print(NumerRange(5,100))
+let Substring s n m =
+not (Isstring s) -> 'Not String' | n gr length(s) -> 'Out_Of_Range' | n+m gr length(s) -> 'Out_Of_Range' |
+Check_String (s,n,n+m,1)
+where rec Check_String(s,r,l,c) =
+c ge l -> '' | c ge r ->  Conc (Stem s)  (Check_String(Stern s, r, l, c+1))  | Check_String(Stern s, r, l, c+1)
+in Print(Substring 'adjshf' 3 2)
 

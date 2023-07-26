@@ -1,79 +1,65 @@
 package ast;
 
-/**
- * Type of abstract syntax tree node. As specified in the RPAL phrase structure grammar.
- * @author Group 9
- */
-public enum ASTNodeType{
-  //General
-  IDENTIFIER("<ID:%s>"),
-  STRING("<STR:'%s'>"),
-  INTEGER("<INT:%s>"),
+// The code is defining an enumeration called `ASTNodeType` in Java. An enumeration is a special type
+// in Java that represents a fixed set of constants.
+public enum ASTNodeType {
+    PAREN("<()>"),
+    COMMA(","),
+    WITHIN("within"),
+    SIMULTDEF("and"),
+    REC("rec"),
+    EQUAL("="),
+    FCNFORM("function_form"),
+    BETA(""),
+    DELTA(""),
+    ETA(""),
+    TUPLE(""),
+    
+    IDENTIFIER("<ID:%s>"),
+    STRING("<STR:'%s'>"),
+    INTEGER("<INT:%s>"),
   
-  //Expressions
-  LET("let"),
-  LAMBDA("lambda"),
-  WHERE("where"),
+    LET("let"),
+    LAMBDA("lambda"),
+    WHERE("where"),
   
-  //Tuple expressions
-  TAU("tau"),
-  AUG("aug"),
-  CONDITIONAL("->"),
+    TAU("tau"),
+    AUG("aug"),
+    CONDITIONAL("->"),
   
-  //Boolean Expressions
-  OR("or"),
-  AND("&"),
-  NOT("not"),
-  GR("gr"),
-  GE("ge"),
-  LS("ls"),
-  LE("le"),
-  EQ("eq"),
-  NE("ne"),
+    OR("or"),
+    AND("&"),
+    NOT("not"),
+    GR("gr"),
+    GE("ge"),
+    LS("ls"),
+    LE("le"),
+    EQ("eq"),
+    NE("ne"),
   
-  //Arithmetic Expressions
-  PLUS("+"),
-  MINUS("-"),
-  NEG("neg"),
-  MULT("*"),
-  DIV("/"),
-  EXP("**"),
-  AT("@"),
+    PLUS("+"),
+    MINUS("-"),
+    NEG("neg"),
+    MULT("*"),
+    DIV("/"),
+    EXP("**"),
+    AT("@"),
   
-  //Rators and Rands
-  GAMMA("gamma"),
-  TRUE("<true>"),
-  FALSE("<false>"),
-  NIL("<nil>"),
-  DUMMY("<dummy>"),
+    GAMMA("gamma"),
+    TRUE("<true>"),
+    FALSE("<false>"),
+    NIL("<nil>"),
+    DUMMY("<dummy>"),
   
-  //Definitions
-  WITHIN("within"),
-  SIMULTDEF("and"),
-  REC("rec"),
-  EQUAL("="),
-  FCNFORM("function_form"),
+    YSTAR("<Y*>");
   
-  //Variables
-  PAREN("<()>"),
-  COMMA(","),
+    private String printName; 
   
-  //Post-standardize
-  YSTAR("<Y*>"),
-  
-  //For program evaluation only. Will never appear in a standardized or non-standardized AST. 
-  BETA(""),
-  DELTA(""),
-  ETA(""),
-  TUPLE("");
-  
-  private String printName; //used for printing AST representation
-  
-  private ASTNodeType(String name){
-    printName = name;
-  }
+    private ASTNodeType(String name){
+        printName = name;
+    }
 
-  public String getPrintName(){
-    return printName;
-  }
+    public String getPrintName(){
+        return printName;
+    }
 }
