@@ -1,3 +1,5 @@
+# Makefile for compiling and running the Java program 'rpal20'
+
 # Define the Java compiler and flags
 JAVAC = javac
 JFLAGS = -d .
