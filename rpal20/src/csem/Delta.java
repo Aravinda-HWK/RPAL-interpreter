@@ -7,16 +7,19 @@ import java.util.Stack;
 import ast.ASTNode;
 import ast.ASTNodeType;
 
-/**
- * Represents a lambda closure.
- * @author Group 9
- */
+
+  //The Delta class represents a node in an abstract syntax tree with bound variables, 
+  //a linked environment, a body, and an index.
+
 public class Delta extends ASTNode{
   private List<String> boundVars;
-  private Environment linkedEnv; //environment in effect when this Delta was pushed on to the value stack
+  private Environment linkedEnv;
   private Stack<ASTNode> body;
   private int index;
   
+  // The `public Delta()` method is a constructor for the `Delta` class. 
+  // It initializes the `boundVars` list as an empty `ArrayList<String>`. 
+  // It also sets the type of the `Delta` object to`ASTNodeType.DELTA`.
   public Delta(){
     setType(ASTNodeType.DELTA);
     boundVars = new ArrayList<String>();
@@ -26,7 +29,9 @@ public class Delta extends ASTNode{
     return nodeCopier.copy(this);
   }
   
-  //used if the program evaluation results in a partial application
+
+  // The code you provided is a class called `Delta` that extends `ASTNode`. It represents a node in an
+  // abstract syntax tree with bound variables, a linked environment, a body, and an index.
   @Override
   public String getValue(){
     return "[lambda closure: "+boundVars.get(0)+": "+index+"]";
