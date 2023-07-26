@@ -9,670 +9,719 @@ import scanner.Scanner;
 import scanner.Token;
 import scanner.TokenType;
 
-/**
- * Recursive descent parser that complies with RPAL's phrase structure grammar.
- * <p>This class does all the heavy lifting:
- * <ul>
- * <li>It gets input from the scanner for every clause in the phase structure grammar.
- * <li>It builds the abstract syntax tree.
- * </ul>
- * @author Group 9
- */
 public class Parser{
+  // The above code is declaring a private Scanner object named "s" and a private Token object named
+  // "currentToken". It also declares a Stack object named "stack" that will store ASTNode objects.
   private Scanner s;
   private Token currentToken;
   Stack<ASTNode> stack;
 
+  // The above code is defining a constructor for a class called Parser. The constructor takes a
+  // parameter of type Scanner and assigns it to a variable called s. It also initializes a new Stack
+  // object called stack.
   public Parser(Scanner s){
     this.s = s;
     stack = new Stack<ASTNode>();
   }
   
+  /**
+   * The function builds an Abstract Syntax Tree (AST) by parsing a given input and returning the root
+   * node of the tree.
+   * 
+   * @return The method is returning an instance of the AST (Abstract Syntax Tree) class.
+   */
   public AST buildAST(){
     startParse();
     return new AST(stack.pop());
   }
 
+ /**
+  * The startParse function reads and processes tokens until the end of the file is reached.
+  */
   public void startParse(){
     readNT();
-    procE(); //extra readNT in procE()
+    procE();
     if(currentToken!=null)
       throw new ParseException("Expected EOF.");
   }
 
-  private void readNT(){
-    do{
-      currentToken = s.readNextToken(); //load next token
-    }while(isCurrentTokenType(TokenType.DELETE));
-    if(null != currentToken){
-      if(currentToken.getType()==TokenType.IDENTIFIER){
-        createTerminalASTNode(ASTNodeType.IDENTIFIER, currentToken.getValue());
-      }
-      else if(currentToken.getType()==TokenType.INTEGER){
-        createTerminalASTNode(ASTNodeType.INTEGER, currentToken.getValue());
-      } 
-      else if(currentToken.getType()==TokenType.STRING){
-        createTerminalASTNode(ASTNodeType.STRING, currentToken.getValue());
-      }
+  private void readNT() {
+    // Continue reading tokens until a non-DELETE token is encountered
+    for (currentToken = s.readNextToken(); isCurrentTokenType(TokenType.DELETE); currentToken = s.readNextToken()) {
+        // Skip DELETE tokens
     }
-  }
-  
-  private boolean isCurrentToken(TokenType type, String value){
-    if(currentToken==null)
-      return false;
-    if(currentToken.getType()!=type || !currentToken.getValue().equals(value))
-      return false;
-    return true;
-  }
-  
-  private boolean isCurrentTokenType(TokenType type){
-    if(currentToken==null)
-      return false;
-    if(currentToken.getType()==type)
-      return true;
-    return false;
-  }
+
+    // Check if the currentToken is not null
+    if (null != currentToken) {
+        if (currentToken.getType() == TokenType.IDENTIFIER) {
+            // Create a terminal AST node for an identifier
+            createTerminalASTNode(ASTNodeType.IDENTIFIER, currentToken.getValue());
+        } else if (currentToken.getType() == TokenType.INTEGER) {
+            // Create a terminal AST node for an integer
+            createTerminalASTNode(ASTNodeType.INTEGER, currentToken.getValue());
+        } else if (currentToken.getType() == TokenType.STRING) {
+            // Create a terminal AST node for a string
+            createTerminalASTNode(ASTNodeType.STRING, currentToken.getValue());
+        }
+    }
+}
+
   
   /**
-   * Builds an N-ary AST node. <p>For example, if the stack at a given point in time
-   * looks like so:
-   * <pre>
-   * a <- top of stack
-   * b
-   * c
-   * d
-   * ...
-   * </pre>
-   * Then, after the call buildNAryASTNode(Z, 3), the stack will look like so:
-   * <pre>
-   * X <- top of stack
-   * d
-   * ...
-   * </pre>
-   * where X has three children a, b, and c, and is of type Z. Or, in the first-child, next-sibling representation:      
-   * <pre>
-   * X
-   * |
-   * a -> b -> c
-   * </pre>
-   * @param type type of node to build
-   * @param ariness number of children to create for the new node
-   */
-  private void buildNAryASTNode(ASTNodeType type, int ariness){
+ * Checks if the current token matches the given TokenType and value.
+ * @param type The expected TokenType to match.
+ * @param value The expected value to match.
+ * @return True if the current token matches the given TokenType and value, false otherwise.
+ */
+private boolean isCurrentToken(TokenType type, String value) {
+    // Check if the currentToken is null, indicating no valid token is available.
+    if (currentToken == null) {
+        return false;
+    }
+
+    // Compare the TokenType and value of the currentToken with the expected values.
+    if (currentToken.getType() != type || !currentToken.getValue().equals(value)) {
+        return false; // If TokenType or value does not match, return false.
+    }
+
+    return true; // The currentToken matches the expected TokenType and value.
+}
+
+  
+  /**
+ * Checks if the current token's TokenType matches the given TokenType.
+ * @param type The expected TokenType to match.
+ * @return True if the current token's TokenType matches the given TokenType, false otherwise.
+ */
+private boolean isCurrentTokenType(TokenType type) {
+    // Check if the currentToken is null, indicating no valid token is available.
+    if (currentToken == null) {
+        return false;
+    }
+
+    // Compare the TokenType of the currentToken with the expected TokenType.
+    if (currentToken.getType() == type) {
+        return true; // If TokenType matches, return true.
+    }
+
+    return false; // The TokenType of the currentToken does not match the expected TokenType.
+}
+
+  
+ /**
+ * Builds an N-ary AST node with the given type and specified arity.
+ *
+ * @param type    The type of the N-ary AST node to build.
+ * @param ariness The arity or number of children the N-ary node should have.
+ */
+private void buildNAryASTNode(ASTNodeType type, int ariness) {
+    // Create a new ASTNode to represent the N-ary node.
     ASTNode node = new ASTNode();
     node.setType(type);
-    while(ariness>0){
-      ASTNode child = stack.pop();
-      if(node.getChild()!=null)
-        child.setSibling(node.getChild());
-      node.setChild(child);
-      node.setSourceLineNumber(child.getSourceLineNumber());
-      ariness--;
-    }
-    stack.push(node);
-  }
 
-  private void createTerminalASTNode(ASTNodeType type, String value){
+    for (int i = 0; i < ariness; i++) {
+        // Pop the topmost 'ariness' number of nodes from the stack as children of the current node.
+        ASTNode child = stack.pop();
+
+        // Link the child to the current node by setting its sibling pointer.
+        // This allows us to create a linked list of children with the same parent.
+        if (node.getChild() != null) {
+            child.setSibling(node.getChild());
+        }
+
+        // Set the current child as the new first child of the N-ary node.
+        node.setChild(child);
+
+        // Set the source line number of the N-ary node to that of its first child.
+        // This ensures consistency in the source line information for the entire N-ary node.
+        node.setSourceLineNumber(child.getSourceLineNumber());
+    }
+
+    // Push the newly built N-ary node back onto the stack to be used as a parent in further processing.
+    stack.push(node);
+}
+
+
+  /**
+ * Creates a terminal AST node with the given type and value from the current token.
+ *
+ * @param type  The type of the terminal AST node to create.
+ * @param value The value of the terminal AST node.
+ */
+private void createTerminalASTNode(ASTNodeType type, String value) {
+    // Create a new ASTNode to represent the terminal node.
     ASTNode node = new ASTNode();
     node.setType(type);
     node.setValue(value);
-    node.setSourceLineNumber(currentToken.getSourceLineNumber());
-    stack.push(node);
-  }
-  
-  /******************************
-   * Expressions
-   *******************************/
-  
-  /**
-   * <pre>
-   * E-> 'let' D 'in' E => 'let'
-   *  -> 'fn' Vb+ '.' E => 'lambda'
-   *  -> Ew;
-   * </pre>
-   */
-  private void procE(){
-    if(isCurrentToken(TokenType.RESERVED, "let")){ //E -> 'let' D 'in' E => 'let'
-      readNT();
-      procD();
-      if(!isCurrentToken(TokenType.RESERVED, "in"))
-        throw new ParseException("E:  'in' expected");
-      readNT();
-      procE(); //extra readNT in procE()
-      buildNAryASTNode(ASTNodeType.LET, 2);
-    }
-    else if(isCurrentToken(TokenType.RESERVED, "fn")){ //E -> 'fn' Vb+ '.' E => 'lambda'
-      int treesToPop = 0;
-      
-      readNT();
-      while(isCurrentTokenType(TokenType.IDENTIFIER) || isCurrentTokenType(TokenType.L_PAREN)){
-        procVB(); //extra readNT in procVB()
-        treesToPop++;
-      }
-      
-      if(treesToPop==0)
-        throw new ParseException("E: at least one 'Vb' expected");
-      
-      if(!isCurrentToken(TokenType.OPERATOR, "."))
-        throw new ParseException("E: '.' expected");
-      
-      readNT();
-      procE(); //extra readNT in procE()
-      
-      buildNAryASTNode(ASTNodeType.LAMBDA, treesToPop+1); //+1 for the last E 
-    }
-    else //E -> Ew
-      procEW();
-  }
 
+    // Set the source line number of the terminal node from the current token.
+    node.setSourceLineNumber(currentToken.getSourceLineNumber());
+
+    // Push the newly created terminal node onto the stack for further processing.
+    stack.push(node);
+}
+
+  
+  private void procE() {
+    // Check if the current token is 'let'
+    if (isCurrentToken(TokenType.RESERVED, "let")) {
+        readNT(); // Read the 'let' token
+        procD(); // Process the declarations
+        if (!isCurrentToken(TokenType.RESERVED, "in"))
+            throw new ParseException("E: 'in' expected");
+        readNT(); // Read the 'in' token
+        procE(); // Process the expression
+        buildNAryASTNode(ASTNodeType.LET, 2); // Build the AST node for 'let' expression with 2 children
+    }
+    // Check if the current token is 'fn'
+    else if (isCurrentToken(TokenType.RESERVED, "fn")) {
+        int treesToPop = 0;
+        readNT(); // Read the 'fn' token
+
+        // Process variable bindings
+        for (; isCurrentTokenType(TokenType.IDENTIFIER) || isCurrentTokenType(TokenType.L_PAREN); treesToPop++) {
+            procVB();
+        }
+
+        // Check if at least one 'Vb' is expected
+        if (treesToPop == 0)
+            throw new ParseException("E: at least one 'Vb' expected");
+
+        // Check if the next token is '.'
+        if (!isCurrentToken(TokenType.OPERATOR, "."))
+            throw new ParseException("E: '.' expected");
+
+        readNT(); // Read the '.' token
+        procE(); // Process the expression
+        buildNAryASTNode(ASTNodeType.LAMBDA, treesToPop + 1); // Build the AST node for lambda expression with appropriate children
+    }
+    // If neither 'let' nor 'fn', then process the expression with postfix operators and other expressions
+    else
+        procEW();
+}
+  
   /**
-   * <pre>
-   * Ew -> T 'where' Dr => 'where'
-   *    -> T;
-   * </pre>
+   * The function procEW processes a token and checks if it is a reserved word "where", and if so, it
+   * reads the next token and processes it as a DR (data retrieval) token, and then builds an n-ary AST
+   * (abstract syntax tree) node with the type WHERE and 2 children.
    */
   private void procEW(){
-    procT(); //Ew -> T
-    //extra readToken done in procT()
-    if(isCurrentToken(TokenType.RESERVED, "where")){ //Ew -> T 'where' Dr => 'where'
+    procT();
+    if(isCurrentToken(TokenType.RESERVED, "where")){ 
       readNT();
-      procDR(); //extra readToken() in procDR()
+      procDR(); 
       buildNAryASTNode(ASTNodeType.WHERE, 2);
     }
   }
-  
-  /******************************
-   * Tuple Expressions
-   *******************************/
-  
-  /**
-   * <pre>
-   * T -> Ta ( ',' Ta )+ => 'tau'
-   *   -> Ta;
-   * </pre>
-   */
-  private void procT(){
-    procTA(); //T -> Ta
-    //extra readToken() in procTA()
-    int treesToPop = 0;
-    while(isCurrentToken(TokenType.OPERATOR, ",")){ //T -> Ta (',' Ta )+ => 'tau'
-      readNT();
-      procTA(); //extra readToken() done in procTA()
-      treesToPop++;
-    }
-    if(treesToPop > 0) buildNAryASTNode(ASTNodeType.TAU, treesToPop+1);
-  }
+   
+ 
+  private void procT() {
+    // Process the first term in the expression
+    procTA();
 
-  /**
-   * <pre>
-   * Ta -> Ta 'aug' Tc => 'aug'
-   *    -> Tc;
-   * </pre>
-   */
-  private void procTA(){
-    procTC(); //Ta -> Tc
-    //extra readNT done in procTC()
-    while(isCurrentToken(TokenType.RESERVED, "aug")){ //Ta -> Ta 'aug' Tc => 'aug'
-      readNT();
-      procTC(); //extra readNT done in procTC()
-      buildNAryASTNode(ASTNodeType.AUG, 2);
-    }
-  }
+    int treesToPop = 0; // Counter to keep track of the number of terms
 
-  /**
-   * <pre>
-   * Tc -> B '->' Tc '|' Tc => '->'
-   *    -> B;
-   * </pre>
-   */
-  private void procTC(){
-    procB(); //Tc -> B
-    //extra readNT in procBT()
-    if(isCurrentToken(TokenType.OPERATOR, "->")){ //Tc -> B '->' Tc '|' Tc => '->'
-      readNT();
-      procTC(); //extra readNT done in procTC
-      if(!isCurrentToken(TokenType.OPERATOR, "|"))
-        throw new ParseException("TC: '|' expected");
-      readNT();
-      procTC();  //extra readNT done in procTC
-      buildNAryASTNode(ASTNodeType.CONDITIONAL, 3);
+    // Iterate over each ',' separated term in the expression
+    for (; isCurrentToken(TokenType.OPERATOR, ","); treesToPop++) {
+        readNT(); // Read the ',' token
+        procTA(); // Process the next term
     }
-  }
-  
-  /******************************
-   * Boolean Expressions
-   *******************************/
-  
-  /**
-   * <pre>
-   * B -> B 'or' Bt => 'or'
-   *   -> Bt;
-   * </pre>
-   */
-  private void procB(){
-    procBT(); //B -> Bt
-    //extra readNT in procBT()
-    while(isCurrentToken(TokenType.RESERVED, "or")){ //B -> B 'or' Bt => 'or'
-      readNT();
-      procBT();
-      buildNAryASTNode(ASTNodeType.OR, 2);
+
+    // If there are multiple terms, build the NAry AST node for the 'tau' expression
+    if (treesToPop > 0) {
+        buildNAryASTNode(ASTNodeType.TAU, treesToPop + 1);
     }
-  }
-  
-  /**
-   * <pre>
-   * Bt -> Bs '&' Bt => '&'
-   *    -> Bs;
-   * </pre>
-   */
-  private void procBT(){
-    procBS(); //Bt -> Bs;
-    //extra readNT in procBS()
-    while(isCurrentToken(TokenType.OPERATOR, "&")){ //Bt -> Bt '&' Bs => '&'
-      readNT();
-      procBS(); //extra readNT in procBS()
-      buildNAryASTNode(ASTNodeType.AND, 2);
+}
+ 
+private void procTA() {
+    procTC();
+
+    // Iterate over each 'aug' separated term in the expression
+    for (; isCurrentToken(TokenType.RESERVED, "aug"); ) {
+        readNT(); // Read the 'aug' token
+        procTC(); // Process the next term
+        buildNAryASTNode(ASTNodeType.AUG, 2); // Build the AST node for 'aug' expression with 2 children
     }
-  }
-  
-  /**
-   * <pre>
-   * Bs -> 'not Bp => 'not'
-   *    -> Bp;
-   * </pre>
-   */
-  private void procBS(){
-    if(isCurrentToken(TokenType.RESERVED, "not")){ //Bs -> 'not' Bp => 'not'
-      readNT();
-      procBP(); //extra readNT in procBP()
-      buildNAryASTNode(ASTNodeType.NOT, 1);
+}
+
+ private void procTC() {
+    // Process the first expression
+    procB();
+
+    // Check if the current token is '->', indicating a conditional expression
+    if (isCurrentToken(TokenType.OPERATOR, "->")) {
+        readNT(); // Read the '->' token
+
+        // Process the expression on the right-hand side of '->'
+        procTC();
+
+        // Check if the current token is '|', which separates the two branches of the conditional expression
+        if (!isCurrentToken(TokenType.OPERATOR, "|"))
+            throw new ParseException("TC: '|' expected");
+        
+        readNT(); // Read the '|' token
+
+        // Process the expression on the right-hand side of '|'
+        procTC();
+
+        // Build the AST node for the 'conditional' expression with 3 children
+        buildNAryASTNode(ASTNodeType.CONDITIONAL, 3);
     }
-    else
-      procBP(); //Bs -> Bp
-      //extra readNT in procBP()
-  }
+}
+
   
-  /**
-   * <pre>
-   * Bp -> A ('gr' | '>' ) A => 'gr'
-   *    -> A ('ge' | '>=' ) A => 'ge'
-   *    -> A ('ls' | '<' ) A => 'ge'
-   *    -> A ('le' | '<=' ) A => 'ge'
-   *    -> A 'eq' A => 'eq'
-   *    -> A 'ne' A => 'ne'
-   *    -> A;
-   * </pre>
-   */
+  
+ private void procB() {
+    procBT();
+
+    // Iterate over each 'or' separated term in the expression
+    for (; isCurrentToken(TokenType.RESERVED, "or"); ) {
+        readNT(); // Read the 'or' token
+        procBT(); // Process the next term
+        buildNAryASTNode(ASTNodeType.OR, 2); // Build the AST node for 'or' expression with 2 children
+    }
+}
+
+private void procBT() {
+    procBS();
+
+    // Iterate over each '&' separated factor in the expression
+    for (; isCurrentToken(TokenType.OPERATOR, "&"); ) {
+        readNT(); // Read the '&' token
+        procBS(); // Process the next factor
+        buildNAryASTNode(ASTNodeType.AND, 2); // Build the AST node for 'and' expression with 2 children
+    }
+}
+
+private void procBS() {
+    // Check if the current token is 'not'
+    if (isCurrentToken(TokenType.RESERVED, "not")) {
+        readNT(); // Read the 'not' token
+        procBP(); // Process the next term
+        buildNAryASTNode(ASTNodeType.NOT, 1); // Build the AST node for 'not' expression with 1 child
+    } else {
+        procBP(); // Process the term
+    }
+}
+
   private void procBP(){
-    procA(); //Bp -> A
-    if(isCurrentToken(TokenType.RESERVED,"gr")||isCurrentToken(TokenType.OPERATOR,">")){ //Bp -> A('gr' | '>' ) A => 'gr'
-      readNT();
-      procA(); //extra readNT in procA()
-      buildNAryASTNode(ASTNodeType.GR, 2);
+    procA(); // Process the left-hand side expression
+
+    // Check for greater than (>) or 'gr' reserved token
+    if(isCurrentToken(TokenType.RESERVED,"gr")||isCurrentToken(TokenType.OPERATOR,">")){ 
+        readNT(); // Consume the 'gr' or '>' token
+        procA(); // Process the right-hand side expression
+        buildNAryASTNode(ASTNodeType.GR, 2); // Build AST node for 'greater than' operation
     }
-    else if(isCurrentToken(TokenType.RESERVED,"ge")||isCurrentToken(TokenType.OPERATOR,">=")){ //Bp -> A ('ge' | '>=') A => 'ge'
-      readNT();
-      procA(); //extra readNT in procA()
-      buildNAryASTNode(ASTNodeType.GE, 2);
+    // Check for greater than or equal (>=) or 'ge' reserved token
+    else if(isCurrentToken(TokenType.RESERVED,"ge")||isCurrentToken(TokenType.OPERATOR,">=")){ 
+        readNT(); // Consume the 'ge' or '>=' token
+        procA(); // Process the right-hand side expression
+        buildNAryASTNode(ASTNodeType.GE, 2); // Build AST node for 'greater than or equal' operation
     }
-    else if(isCurrentToken(TokenType.RESERVED,"ls")||isCurrentToken(TokenType.OPERATOR,"<")){ //Bp -> A ('ls' | '<' ) A => 'ls'
-      readNT();
-      procA(); //extra readNT in procA()
-      buildNAryASTNode(ASTNodeType.LS, 2);
+    // Check for less than (<) or 'ls' reserved token
+    else if(isCurrentToken(TokenType.RESERVED,"ls")||isCurrentToken(TokenType.OPERATOR,"<")){ 
+        readNT(); // Consume the 'ls' or '<' token
+        procA(); // Process the right-hand side expression
+        buildNAryASTNode(ASTNodeType.LS, 2); // Build AST node for 'less than' operation
     }
-    else if(isCurrentToken(TokenType.RESERVED,"le")||isCurrentToken(TokenType.OPERATOR,"<=")){ //Bp -> A ('le' | '<=') A => 'le'
-      readNT();
-      procA(); //extra readNT in procA()
-      buildNAryASTNode(ASTNodeType.LE, 2);
+    // Check for less than or equal (<=) or 'le' reserved token
+    else if(isCurrentToken(TokenType.RESERVED,"le")||isCurrentToken(TokenType.OPERATOR,"<=")){ 
+        readNT(); // Consume the 'le' or '<=' token
+        procA(); // Process the right-hand side expression
+        buildNAryASTNode(ASTNodeType.LE, 2); // Build AST node for 'less than or equal' operation
     }
-    else if(isCurrentToken(TokenType.RESERVED,"eq")){ //Bp -> A 'eq' A => 'eq'
-      readNT();
-      procA(); //extra readNT in procA()
-      buildNAryASTNode(ASTNodeType.EQ, 2);
+    // Check for equal (eq) reserved token
+    else if(isCurrentToken(TokenType.RESERVED,"eq")){ 
+        readNT(); // Consume the 'eq' token
+        procA(); // Process the right-hand side expression
+        buildNAryASTNode(ASTNodeType.EQ, 2); // Build AST node for 'equal' operation
     }
-    else if(isCurrentToken(TokenType.RESERVED,"ne")){ //Bp -> A 'ne' A => 'ne'
-      readNT();
-      procA(); //extra readNT in procA()
-      buildNAryASTNode(ASTNodeType.NE, 2);
+    // Check for not equal (ne) reserved token
+    else if(isCurrentToken(TokenType.RESERVED,"ne")){
+        readNT(); // Consume the 'ne' token
+        procA(); // Process the right-hand side expression
+        buildNAryASTNode(ASTNodeType.NE, 2); // Build AST node for 'not equal' operation
     }
+}
+
+  
+private void procA() {
+  // Check if the current token is '+'
+  if (isCurrentToken(TokenType.OPERATOR, "+")) {
+    readNT(); // Consume the '+' token
+    procAT(); // Process the next term
+  } 
+  // Check if the current token is '-'
+  else if (isCurrentToken(TokenType.OPERATOR, "-")) {
+    readNT(); // Consume the '-' token
+    procAT(); // Process the next term
+    buildNAryASTNode(ASTNodeType.NEG, 1); // Build AST node for unary minus
+  } 
+  // If the current token is neither '+' nor '-', process the term
+  else {
+    procAT(); // Process the term
   }
-  
-  
-  /******************************
-   * Arithmetic Expressions
-   *******************************/
-  
-  /**
-   * <pre>
-   * A -> A '+' At => '+'
-   *   -> A '-' At => '-'
-   *   ->   '+' At
-   *   ->   '-' At => 'neg'
-   *   -> At;
-   * </pre>
-   */
-  private void procA(){
-    if(isCurrentToken(TokenType.OPERATOR, "+")){ //A -> '+' At
-      readNT();
-      procAT(); //extra readNT in procAT()
-    }
-    else if(isCurrentToken(TokenType.OPERATOR, "-")){ //A -> '-' At => 'neg'
-      readNT();
-      procAT(); //extra readNT in procAT()
-      buildNAryASTNode(ASTNodeType.NEG, 1);
-    }
+
+  // A flag to keep track of whether the last operator encountered was a '+' or '-'
+  boolean plus = true;
+
+  // Loop to handle consecutive '+' or '-' operators
+  while (isCurrentToken(TokenType.OPERATOR, "+") || isCurrentToken(TokenType.OPERATOR, "-")) {
+    // Check the current operator and set the flag accordingly
+    if (currentToken.getValue().equals("+"))
+      plus = true; // Set flag for '+' operator
+    else if (currentToken.getValue().equals("-"))
+      plus = false; // Set flag for '-' operator
+
+    readNT(); // Consume the '+' or '-' token
+    procAT(); // Process the next term
+
+    // Build the appropriate AST node based on whether it is a plus or minus operator
+    if (plus)
+      buildNAryASTNode(ASTNodeType.PLUS, 2); // Build AST node for '+' operation
     else
-      procAT(); //extra readNT in procAT()
-    
-    boolean plus = true;
-    while(isCurrentToken(TokenType.OPERATOR, "+")||isCurrentToken(TokenType.OPERATOR, "-")){
-      if(currentToken.getValue().equals("+"))
-        plus = true;
-      else if(currentToken.getValue().equals("-"))
-        plus = false;
-      readNT();
-      procAT(); //extra readNT in procAT()
-      if(plus) //A -> A '+' At => '+'
-        buildNAryASTNode(ASTNodeType.PLUS, 2);
-      else //A -> A '-' At => '-'
-        buildNAryASTNode(ASTNodeType.MINUS, 2);
-    }
+      buildNAryASTNode(ASTNodeType.MINUS, 2); // Build AST node for '-' operation
   }
+}
+
   
-  /**
-   * <pre>
-   * At -> At '*' Af => '*'
-   *    -> At '/' Af => '/'
-   *    -> Af;
-   * </pre>
-   */
-  private void procAT(){
-    procAF(); //At -> Af;
-    //extra readNT in procAF()
+  
+ private void procAT() {
+    // Process the left-hand side factor.
+    procAF();
+
+    // A flag to keep track of whether the last operator encountered was '*' or '/'.
     boolean mult = true;
-    while(isCurrentToken(TokenType.OPERATOR, "*")||isCurrentToken(TokenType.OPERATOR, "/")){
-      if(currentToken.getValue().equals("*"))
-        mult = true;
-      else if(currentToken.getValue().equals("/"))
-        mult = false;
-      readNT();
-      procAF(); //extra readNT in procAF()
-      if(mult) //At -> At '*' Af => '*'
-        buildNAryASTNode(ASTNodeType.MULT, 2);
-      else //At -> At '/' Af => '/'
-        buildNAryASTNode(ASTNodeType.DIV, 2);
+
+    // Iterate over the consecutive '*' or '/' operators.
+    while (isCurrentToken(TokenType.OPERATOR, "*") || isCurrentToken(TokenType.OPERATOR, "/")) {
+        // Check the current operator and set the flag accordingly.
+        if (currentToken.getValue().equals("*")) {
+            mult = true;
+        } else if (currentToken.getValue().equals("/")) {
+            mult = false;
+        }
+
+        // Consume the current token.
+        readNT();
+
+        // Process the next factor.
+        procAF();
+
+        // Build the appropriate AST node based on the operator.
+        if (mult) {
+            buildNAryASTNode(ASTNodeType.MULT, 2);
+        } else {
+            buildNAryASTNode(ASTNodeType.DIV, 2);
+        }
     }
-  }
+}
+
+// Comments:
+// The `procAF()` method is used to process the left-hand side factor.
+// The `isCurrentToken()` method is used to check if the current token is of the specified type.
+// The `readNT()` method is used to consume the current token.
+// The `buildNAryASTNode()` method is used to build the appropriate AST node based on the operator.
+
   
-  /**
-   * <pre>
-   * Af -> Ap '**' Af => '**'
-   *    -> Ap;
-   * </pre>
-   */
+ /**
+  * The function procAF checks if the current token is an operator "**" and if so, it reads the next
+  * token and recursively calls itself to build an n-ary AST node of type EXP with 2 children.
+  */
   private void procAF(){
-    procAP(); // Af -> Ap;
-    //extra readNT in procAP()
-    if(isCurrentToken(TokenType.OPERATOR, "**")){ //Af -> Ap '**' Af => '**'
+    procAP();
+    if(isCurrentToken(TokenType.OPERATOR, "**")){
       readNT();
       procAF();
       buildNAryASTNode(ASTNodeType.EXP, 2);
     }
   }
   
-  
-  /**
-   * <pre>
-   * Ap -> Ap '@' '&lt;IDENTIFIER&gt;' R => '@'
-   *    -> R; 
-   * </pre>
-   */
-  private void procAP(){
-    procR(); //Ap -> R;
-    //extra readNT in procR()
-    while(isCurrentToken(TokenType.OPERATOR, "@")){ //Ap -> Ap '@' '<IDENTIFIER>' R => '@'
-      readNT();
-      if(!isCurrentTokenType(TokenType.IDENTIFIER))
-        throw new ParseException("AP: expected Identifier");
-      readNT();
-      procR(); //extra readNT in procR()
-      buildNAryASTNode(ASTNodeType.AT, 3);
-    }
-  }
-  
-  /******************************
-   * Rators and Rands
-   *******************************/
-  
-  /**
-   * <pre>
-   * R -> R Rn => 'gamma'
-   *   -> Rn;
-   * </pre>
-   */
-  private void procR(){
-    procRN(); //R -> Rn; NO extra readNT in procRN(). See while loop below for reason.
-    readNT();
-    while(isCurrentTokenType(TokenType.INTEGER)||
-        isCurrentTokenType(TokenType.STRING)|| 
-        isCurrentTokenType(TokenType.IDENTIFIER)||
-        isCurrentToken(TokenType.RESERVED, "true")||
-        isCurrentToken(TokenType.RESERVED, "false")||
-        isCurrentToken(TokenType.RESERVED, "nil")||
-        isCurrentToken(TokenType.RESERVED, "dummy")||
-        isCurrentTokenType(TokenType.L_PAREN)){ //R -> R Rn => 'gamma'
-      procRN(); //NO extra readNT in procRN(). This is important because if we do an extra readNT in procRN and currentToken happens to
-                //be an INTEGER, IDENTIFIER, or STRING, it will get pushed on the stack. Then, the GAMMA node that we build will have the
-                //wrong kids. There are workarounds, e.g. keeping the extra readNT in procRN() and checking here if the last token read
-                //(which was read in procRN()) is an INTEGER, IDENTIFIER, or STRING and, if so, to pop it, call buildNAryASTNode, and then
-                //push it again. I chose this option because it seems cleaner.
-      buildNAryASTNode(ASTNodeType.GAMMA, 2);
-      readNT();
-    }
-  }
+  private void procAP() {
+    // Process the argument predicate.
+    procR();
 
-  /**
-   * NOTE: NO extra readNT in procRN. See comments in {@link #procR()} for explanation.
-   * <pre>
-   * Rn -> '&lt;IDENTIFIER&gt;'
-   *    -> '&lt;INTEGER&gt;'
-   *    -> '&lt;STRING&gt;'
-   *    -> 'true' => 'true'
-   *    -> 'false' => 'false'
-   *    -> 'nil' => 'nil'
-   *    -> '(' E ')'
-   *    -> 'dummy' => 'dummy'
-   * </pre>
-   */
-  private void procRN(){
-    if(isCurrentTokenType(TokenType.IDENTIFIER)|| //R -> '<IDENTIFIER>'
-       isCurrentTokenType(TokenType.INTEGER)|| //R -> '<INTEGER>' 
-       isCurrentTokenType(TokenType.STRING)){ //R-> '<STRING>'
-    }
-    else if(isCurrentToken(TokenType.RESERVED, "true")){ //R -> 'true' => 'true'
-      createTerminalASTNode(ASTNodeType.TRUE, "true");
-    }
-    else if(isCurrentToken(TokenType.RESERVED, "false")){ //R -> 'false' => 'false'
-      createTerminalASTNode(ASTNodeType.FALSE, "false");
-    } 
-    else if(isCurrentToken(TokenType.RESERVED, "nil")){ //R -> 'nil' => 'nil'
-      createTerminalASTNode(ASTNodeType.NIL, "nil");
-    }
-    else if(isCurrentTokenType(TokenType.L_PAREN)){
-      readNT();
-      procE(); //extra readNT in procE()
-      if(!isCurrentTokenType(TokenType.R_PAREN))
-        throw new ParseException("RN: ')' expected");
-    }
-    else if(isCurrentToken(TokenType.RESERVED, "dummy")){ //R -> 'dummy' => 'dummy'
-      createTerminalASTNode(ASTNodeType.DUMMY, "dummy");
-    }
-  }
+    // Iterate over the consecutive '@' operators.
+    while (isCurrentToken(TokenType.OPERATOR, "@")) {
+        // Consume the current token.
+        readNT();
 
-  /******************************
-   * Definitions
-   *******************************/
-  
-  /**
-   * <pre>
-   * D -> Da 'within' D => 'within'
-   *   -> Da;
-   * </pre>
-   */
-  private void procD(){
-    procDA(); //D -> Da
-    //extra readToken() in procDA()
-    if(isCurrentToken(TokenType.RESERVED, "within")){ //D -> Da 'within' D => 'within'
-      readNT();
-      procD();
-      buildNAryASTNode(ASTNodeType.WITHIN, 2);
-    }
-  }
-  
-  /**
-   * <pre>
-   * Da -> Dr ('and' Dr)+ => 'and'
-   *    -> Dr;
-   * </pre>
-   */
-  private void procDA(){
-    procDR(); //Da -> Dr
-    //extra readToken() in procDR()
-    int treesToPop = 0;
-    while(isCurrentToken(TokenType.RESERVED, "and")){ //Da -> Dr ( 'and' Dr )+ => 'and'
-      readNT();
-      procDR(); //extra readToken() in procDR()
-      treesToPop++;
-    }
-    if(treesToPop > 0) buildNAryASTNode(ASTNodeType.SIMULTDEF, treesToPop+1);
-  }
-  
-  /**
-   * Dr -> 'rec' Db => 'rec'
-   *    -> Db;
-   */
-  private void procDR(){
-    if(isCurrentToken(TokenType.RESERVED, "rec")){ //Dr -> 'rec' Db => 'rec'
-      readNT();
-      procDB(); //extra readToken() in procDB()
-      buildNAryASTNode(ASTNodeType.REC, 1);
-    }
-    else{ //Dr -> Db
-      procDB(); //extra readToken() in procDB()
-    }
-  }
-  
-  /**
-   * <pre>
-   * Db -> Vl '=' E => '='
-   *    -> '&lt;IDENTIFIER&gt;' Vb+ '=' E => 'fcn_form'
-   *    -> '(' D ')';
-   * </pre>
-   */
-  private void procDB(){
-    if(isCurrentTokenType(TokenType.L_PAREN)){ //Db -> '(' D ')'
-      procD();
-      readNT();
-      if(!isCurrentTokenType(TokenType.R_PAREN))
-        throw new ParseException("DB: ')' expected");
-      readNT();
-    }
-    else if(isCurrentTokenType(TokenType.IDENTIFIER)){
-      readNT();
-      if(isCurrentToken(TokenType.OPERATOR, ",")){ //Db -> Vl '=' E => '='
-        readNT();
-        procVL(); //extra readNT in procVB()
-        //VL makes its COMMA nodes for all the tokens EXCEPT the ones
-        //we just read above (i.e., the first identifier and the comma after it)
-        //Hence, we must pop the top of the tree VL just made and put it under a
-        //comma node with the identifier it missed.
-        if(!isCurrentToken(TokenType.OPERATOR, "="))
-          throw new ParseException("DB: = expected.");
-        buildNAryASTNode(ASTNodeType.COMMA, 2);
-        readNT();
-        procE(); //extra readNT in procE()
-        buildNAryASTNode(ASTNodeType.EQUAL, 2);
-      }
-      else{ //Db -> '<IDENTIFIER>' Vb+ '=' E => 'fcn_form'
-        if(isCurrentToken(TokenType.OPERATOR, "=")){ //Db -> Vl '=' E => '='; if Vl had only one IDENTIFIER (no commas)
-          readNT();
-          procE(); //extra readNT in procE()
-          buildNAryASTNode(ASTNodeType.EQUAL, 2);
+        // Check if the next token is an identifier.
+        if (!isCurrentTokenType(TokenType.IDENTIFIER)) {
+            throw new ParseException("AP: expected Identifier");
         }
-        else{ //Db -> '<IDENTIFIER>' Vb+ '=' E => 'fcn_form'
-          int treesToPop = 0;
 
-          while(isCurrentTokenType(TokenType.IDENTIFIER) || isCurrentTokenType(TokenType.L_PAREN)){
-            procVB(); //extra readNT in procVB()
-            treesToPop++;
-          }
-
-          if(treesToPop==0)
-            throw new ParseException("E: at least one 'Vb' expected");
-
-          if(!isCurrentToken(TokenType.OPERATOR, "="))
-            throw new ParseException("DB: = expected.");
-
-          readNT();
-          procE(); //extra readNT in procE()
-
-          buildNAryASTNode(ASTNodeType.FCNFORM, treesToPop+2); //+1 for the last E and +1 for the first identifier
-        }
-      }
-    }
-  }
-  
-  /******************************
-   * Variables
-   *******************************/
-  
-  /**
-   * <pre>
-   * Vb -> '&lt;IDENTIFIER&gt;'
-   *    -> '(' Vl ')'
-   *    -> '(' ')' => '()'
-   * </pre>
-   */
-  private void procVB(){
-    if(isCurrentTokenType(TokenType.IDENTIFIER)){ //Vb -> '<IDENTIFIER>'
-      readNT();
-    }
-    else if(isCurrentTokenType(TokenType.L_PAREN)){
-      readNT();
-      if(isCurrentTokenType(TokenType.R_PAREN)){ //Vb -> '(' ')' => '()'
-        createTerminalASTNode(ASTNodeType.PAREN, "");
+        // Consume the identifier token.
         readNT();
-      }
-      else{ //Vb -> '(' Vl ')'
-        procVL(); //extra readNT in procVB()
-        if(!isCurrentTokenType(TokenType.R_PAREN))
-          throw new ParseException("VB: ')' expected");
-        readNT();
-      }
-    }
-  }
 
-  /**
-   * <pre>
-   * Vl -> '&lt;IDENTIFIER&gt;' list ',' => ','?;
-   * </pre>
-   */
-  private void procVL(){
-    if(!isCurrentTokenType(TokenType.IDENTIFIER))
-      throw new ParseException("VL: Identifier expected");
-    else{
-      readNT();
-      int treesToPop = 0;
-      while(isCurrentToken(TokenType.OPERATOR, ",")){ //Vl -> '<IDENTIFIER>' list ',' => ','?;
-        readNT();
-        if(!isCurrentTokenType(TokenType.IDENTIFIER))
-          throw new ParseException("VL: Identifier expected");
-        readNT();
-        treesToPop++;
-      }
-      if(treesToPop > 0) buildNAryASTNode(ASTNodeType.COMMA, treesToPop+1); //+1 for the first identifier
-    }
-  }
+        // Process the next predicate.
+        procR();
 
+        // Build the appropriate AST node based on the operator.
+        buildNAryASTNode(ASTNodeType.AT, 3);
+    }
 }
 
+private void procR() {
+    // Process the right operand.
+    procRN();
+
+    // Consume the next token.
+    readNT();
+
+    // Iterate over the consecutive gamma operators.
+    while (isCurrentTokenType(TokenType.INTEGER) ||
+           isCurrentTokenType(TokenType.STRING) ||
+           isCurrentTokenType(TokenType.IDENTIFIER) ||
+           isCurrentToken(TokenType.RESERVED, "true") ||
+           isCurrentToken(TokenType.RESERVED, "false") ||
+           isCurrentToken(TokenType.RESERVED, "nil") ||
+           isCurrentToken(TokenType.RESERVED, "dummy") ||
+           isCurrentTokenType(TokenType.L_PAREN)) {
+        // Process the next operand.
+        procRN();
+
+        // Build the appropriate AST node based on the operator.
+        buildNAryASTNode(ASTNodeType.GAMMA, 2);
+
+        // Consume the next token.
+        readNT();
+    }
+}
+
+private void procRN() {
+    // Check if the current token is an identifier, integer, or string.
+    if (isCurrentTokenType(TokenType.IDENTIFIER) ||
+        isCurrentTokenType(TokenType.INTEGER) ||
+        isCurrentTokenType(TokenType.STRING)) {
+        // Do nothing.
+    }
+    // Check if the current token is the keyword "true".
+    else if (isCurrentToken(TokenType.RESERVED, "true")) {
+        // Create a terminal AST node with the value "true".
+        createTerminalASTNode(ASTNodeType.TRUE, "true");
+    }
+    // Check if the current token is the keyword "false".
+    else if (isCurrentToken(TokenType.RESERVED, "false")) {
+        // Create a terminal AST node with the value "false".
+        createTerminalASTNode(ASTNodeType.FALSE, "false");
+    }
+    // Check if the current token is the keyword "nil".
+    else if (isCurrentToken(TokenType.RESERVED, "nil")) {
+        // Create a terminal AST node with the value "nil".
+        createTerminalASTNode(ASTNodeType.NIL, "nil");
+    }
+    // Check if the current token is a left parenthesis.
+    else if (isCurrentTokenType(TokenType.L_PAREN)) {
+        // Consume the current token.
+        readNT();
+
+        // Process the expression.
+        procE();
+
+        // Check if the current token is a right parenthesis.
+        if (!isCurrentTokenType(TokenType.R_PAREN)) {
+            throw new ParseException("RN: ')' expected");
+        }
+    }
+    // Check if the current token is the keyword "dummy".
+    else if (isCurrentToken(TokenType.RESERVED, "dummy")) {
+        // Create a terminal AST node with the value "dummy".
+        createTerminalASTNode(ASTNodeType.DUMMY, "dummy");
+    }
+}
+
+
+/**
+ * The function `procD` processes a specific syntax rule and builds an AST node if a certain condition
+ * is met.
+ */
+private void procD() {
+    procDA();
+    if (isCurrentToken(TokenType.RESERVED, "within")) {
+        readNT();
+        procD();
+        buildNAryASTNode(ASTNodeType.WITHIN, 2);
+    }
+}
+
+/**
+ * The function procDA processes a series of "and" statements by calling procDR and building an n-ary
+ * AST node.
+ */
+private void procDA() {
+    procDR();
+    int treesToPop = 0;
+    while (isCurrentToken(TokenType.RESERVED, "and")) {
+        readNT();
+        procDR();
+        treesToPop++;
+    }
+    if (treesToPop > 0) buildNAryASTNode(ASTNodeType.SIMULTDEF, treesToPop + 1);
+}
+
+  
+ /**
+  * The function procDR checks if the current token is "rec" and if so, reads the next token and
+  * processes the database, otherwise it just processes the database.
+  */
+  private void procDR(){
+    if(isCurrentToken(TokenType.RESERVED, "rec")){
+      readNT();
+      procDB();
+      buildNAryASTNode(ASTNodeType.REC, 1);
+    }
+    else{
+      procDB();
+    }
+  }
+
+  private void procDB() {
+    // Process the database.
+    if (isCurrentTokenType(TokenType.L_PAREN)) {
+        // Consume the left parenthesis.
+        readNT();
+
+        // Process the definition.
+        procD();
+
+        // Consume the right parenthesis.
+        if (!isCurrentTokenType(TokenType.R_PAREN)) {
+            throw new ParseException("DB: ')' expected");
+        }
+
+        readNT();
+    } else if (isCurrentTokenType(TokenType.IDENTIFIER)) {
+        // Consume the identifier.
+        readNT();
+
+        // Check if the next token is a comma.
+        if (isCurrentToken(TokenType.OPERATOR, ",")) {
+            // Consume the comma.
+            readNT();
+
+            // Process the value list.
+            procVL();
+
+            // Check if the next token is an equal sign.
+            if (!isCurrentToken(TokenType.OPERATOR, "=")) {
+                throw new ParseException("DB: = expected.");
+            }
+
+            // Consume the equal sign.
+            readNT();
+
+            // Process the expression.
+            procE();
+
+            // Build the appropriate AST node based on the operators.
+            buildNAryASTNode(ASTNodeType.EQUAL, 2);
+        } else {
+            // Check if the next token is an equal sign.
+            if (isCurrentToken(TokenType.OPERATOR, "=")) {
+                // Consume the equal sign.
+                readNT();
+
+                // Process the expression.
+                procE();
+
+                // Build the appropriate AST node based on the operators.
+                buildNAryASTNode(ASTNodeType.EQUAL, 2);
+            } else {
+                // Process the value list.
+                int treesToPop = 0;
+
+                while (isCurrentTokenType(TokenType.IDENTIFIER) || isCurrentTokenType(TokenType.L_PAREN)) {
+                    procVB();
+                    treesToPop++;
+                }
+
+                if (treesToPop == 0) {
+                    throw new ParseException("E: at least one 'Vb' expected");
+                }
+
+                if (!isCurrentToken(TokenType.OPERATOR, "=")) {
+                    throw new ParseException("DB: = expected.");
+                }
+
+                readNT();
+                procE();
+
+                buildNAryASTNode(ASTNodeType.FCNFORM, treesToPop + 2);
+            }
+        }
+    }
+}
+
+private void procVB() {
+    // Process the value.
+    if (isCurrentTokenType(TokenType.IDENTIFIER)) {
+        // Consume the identifier.
+        readNT();
+    } else if (isCurrentTokenType(TokenType.L_PAREN)) {
+        // Consume the left parenthesis.
+        readNT();
+
+        if (isCurrentTokenType(TokenType.R_PAREN)) {
+            // Create a terminal AST node with the value "".
+            createTerminalASTNode(ASTNodeType.PAREN, "");
+            readNT();
+        } else {
+            // Process the value list.
+            procVL();
+
+            if (!isCurrentTokenType(TokenType.R_PAREN)) {
+                throw new ParseException("VB: ')' expected");
+            }
+
+            readNT();
+        }
+    }
+}
+
+
+ private void procVL() {
+    // Process the value list.
+    if (!isCurrentTokenType(TokenType.IDENTIFIER)) {
+        // Throw an exception if the next token is not an identifier.
+        throw new ParseException("VL: Identifier expected");
+    }
+
+    // Consume the identifier.
+    readNT();
+
+    // Initialize a variable to keep track of the number of commas.
+    int treesToPop = 0;
+
+    // Iterate over the consecutive commas.
+    while (isCurrentToken(TokenType.OPERATOR, ",")) {
+        // Consume the comma.
+        readNT();
+
+        // Check if the next token is an identifier.
+        if (!isCurrentTokenType(TokenType.IDENTIFIER)) {
+            // Throw an exception if the next token is not an identifier.
+            throw new ParseException("VL: Identifier expected");
+        }
+
+        // Consume the identifier.
+        readNT();
+
+        // Increment the number of commas.
+        treesToPop++;
+    }
+
+    // Build the appropriate AST node based on the operators.
+    if (treesToPop > 0) {
+        buildNAryASTNode(ASTNodeType.COMMA, treesToPop + 1);
+    }
+}
+
+// Comments:
+// The `procVL()` method processes the value list.
+// The `isCurrentTokenType()` method is used to check if the current token is of the specified type.
+// The `readNT()` method is used to consume the current token.
+// The `buildNAryASTNode()` method is used to build the appropriate AST node based on the operators.
+
+}
