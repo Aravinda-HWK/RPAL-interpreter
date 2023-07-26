@@ -1,0 +1,15 @@
+let mod = fn(x, y). x - (x/y)*y
+in
+let rec revers = fn(x, y).
+  x eq 0 -> y |
+  revers(x/10, y*10 + mod(x, 10))
+in
+let palindrome = fn(x). x eq revers(x, 0)
+in
+let rec list = fn(x, y, T).
+  x gr y -> T |
+  palindrome(x) -> list(x + 1, y, T aug x) | list(x + 1, y, T)
+in
+let palindromeList = fn(x, y). list(x, y, nil)
+in
+Print(palindromeList(100, 500))
