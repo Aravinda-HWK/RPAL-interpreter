@@ -6,17 +6,14 @@ import java.util.Stack;
 
 import ast.ASTNode;
 
-/**
- * Class to make copies of nodes on value stack. Used to pass back copies of
- * environment bindings so that later uses of those bindings are not affected
- * by any changes made in any earlier deltas.
- * 
- * <p>Uses the Visitor pattern to avoid instanceOf code smell.
- * 
- * @author Group 9
- */
+
 public class NodeCopier{
   
+
+//The function "copy" creates a deep copy of an ASTNode object, including its child and sibling nodes.
+//astNode The `astNode` parameter is an instance of the `ASTNode` class, which represents a node in an abstract syntax tree.
+//The method is returning a copy of the given ASTNode object.
+
   public ASTNode copy(ASTNode astNode){
     ASTNode copy = new ASTNode();
     if(astNode.getChild()!=null)
@@ -29,6 +26,12 @@ public class NodeCopier{
     return copy;
   }
   
+
+  // The function `copy` creates a deep copy of a `Beta` object, including its child, sibling, type,
+  // value, source line number, then body, and else bod
+  // beta The parameter "beta" is an object of type Beta.
+  // The method is returning a copy of the Beta object.
+
   public Beta copy(Beta beta){
     Beta copy = new Beta();
     if(beta.getChild()!=null)
@@ -54,6 +57,12 @@ public class NodeCopier{
     return copy;
   }
   
+
+  // The function "copy" creates a deep copy of an object of type Eta, including its child, sibling,
+  // type, value, source line number, and delta.
+  // eta The parameter "eta" is an object of type Eta.
+  // The method is returning a copy of the Eta object.
+
   public Eta copy(Eta eta){
     Eta copy = new Eta();
     if(eta.getChild()!=null)
@@ -69,6 +78,12 @@ public class NodeCopier{
     return copy;
   }
   
+
+  // The function `copy` creates a deep copy of a `Delta` object, including its child, sibling, type,
+  // value, index, source line number, body, bound variables, and linked environment.
+  // delta The parameter "delta" is an object of type "Delta".
+  // The method is returning a copy of the Delta object.
+
   public Delta copy(Delta delta){
     Delta copy = new Delta();
     if(delta.getChild()!=null)
@@ -84,6 +99,9 @@ public class NodeCopier{
     for(ASTNode bodyElement: delta.getBody()){
       bodyCopy.add(bodyElement.accept(this));
     }
+    // The line `copy.setBody(bodyCopy);` is setting the body of the copied `Delta` object to the deep
+    // copy of the original `Delta` object's body. It is copying each element of the original body list
+    // and adding it to the `bodyCopy` list, and then setting the `bodyCopy` list as the body of the copied `Delta` object.
     copy.setBody(bodyCopy);
     
     List<String> boundVarsCopy = new ArrayList<String>();
@@ -95,6 +113,11 @@ public class NodeCopier{
     return copy;
   }
   
+
+  // The function "copy" creates a deep copy of a Tuple object, including its child and sibling references.
+  // tuple The parameter "tuple" is an object of type "Tuple".
+  // The method is returning a copy of the input Tuple object.
+
   public Tuple copy(Tuple tuple){
     Tuple copy = new Tuple();
     if(tuple.getChild()!=null)

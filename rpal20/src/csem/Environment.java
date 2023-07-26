@@ -5,6 +5,10 @@ import java.util.Map;
 
 import ast.ASTNode;
 
+
+//The Environment class represents a scope in a programming language and stores the mapping of
+//variable names to their corresponding values.
+
 public class Environment{
   private Environment parent;
   private Map<String, ASTNode> nameValueMap;
@@ -21,14 +25,9 @@ public class Environment{
     this.parent = parent;
   }
   
-  /**
-   * Tries to find the binding of the given key in the mappings of this Environment's
-   * inheritance hierarchy, starting with the Environment this method is invoked on.
-   * 
-   * @param key key the mapping of which to find
-   * @return ASTNode that corresponds to the mapping of the key passed in as an argument
-   *         or null if no mapping was found
-   */
+
+// The `lookup` method in the `Environment` class is used to search for a variable name in the current
+// scope and its parent scopes. It takes a `key` parameter, which is the variable name to be looked up.
   public ASTNode lookup(String key){
     ASTNode retValue = null;
     Map<String, ASTNode> map = nameValueMap;
